@@ -3,8 +3,8 @@ from pathlib import Path
 import re
 import html
 root=Path(__file__).resolve().parent
-pages=['index','modelo','aprendizaje','laboratorio','bitacora','instalacion']
-titles=['Reporte','Modelo matemático','Aprendizaje en Python','Laboratorio','Bitácora','Publicación']
+pages=['index','modelo','aprendizaje','laboratorio','instalacion']
+titles=['Reporte','Modelo matemático','Aprendizaje en Python','Laboratorio','Publicación']
 def inline(s):
     s=re.sub(r'\{\{\s*[\'\"]([^\'\"]+)[\'\"]\s*\|\s*relative_url\s*\}\}',lambda m:'docs/game/index.html' if '/game/' in m[1] else '#'+m[1].strip('/'),s)
     s=re.sub(r'\{:[^}]+\}','',s)
@@ -45,5 +45,5 @@ css='''*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;backgro
 nav=''.join(f'<a href="#{p}">{i+1:02} &nbsp; {t}</a>' for i,(p,t) in enumerate(zip(pages,titles)))
 body=''.join(f'<section id="{p}">'+render((root/'docs'/f'{p}.md').read_text())+'</section>' for p in pages)
 script="""document.getElementById('theme').onclick=()=>{document.body.classList.toggle('dark');document.querySelectorAll('iframe').forEach(f=>f.contentWindow.postMessage({theme:document.body.classList.contains('dark')?'dark':'light'},location.origin));};"""
-(root/'reporte-local.html').write_text(f'<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Can Finder 5000 · Reporte</title><style>{css}</style></head><body><nav><span class="badge">IBERO / PRÁCTICA 05</span><strong>CAN FINDER<br>5000</strong>{nav}<button id="theme">☀ / ☾ Cambiar tema</button></nav><main>{body}</main><script>{script}</script></body></html>',encoding='utf-8')
+(root/'reporte-local.html').write_text(f'<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Can Finder 5000 · Reporte</title><style>{css}</style><link rel="stylesheet" href="docs/retro.css?v=4"></head><body><nav><span class="badge">IBERO / PRÁCTICA 05</span><strong>CAN FINDER<br>5000</strong>{nav}<button id="theme">☀ / ☾ Cambiar tema</button></nav><main>{body}</main><script>{script}</script></body></html>',encoding='utf-8')
 print('reporte-local.html actualizado')

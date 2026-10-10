@@ -18,7 +18,7 @@ Docentes: Dr. Alexandro López González y Mtro. Julio A. Caballero Mora
 [Consultar el modelo]({{ '/modelo/' | relative_url }}){: .btn }
 
 ### Resumen
-Se implementa un entorno de recolección basado en procesos de decisión de Markov. El jugador controla un robot mediante el teclado y observa transiciones estocásticas de movimiento y energía. El sistema mide recompensa acumulada, retorno descontado, recolecciones y rescates durante episodios de 100 turnos. Como extensión, se incorpora un agente de Q-learning escrito en Python, inicializado sin experiencia, y una modalidad con recompensas por color. En ambas modalidades la batería se descarga en función del tiempo, con una tasa que cambia de una partida a otra.
+Se implementa un entorno de recolección basado en procesos de decisión de Markov. El jugador controla un robot mediante el teclado y observa movimiento estocástico y energía dependiente del tiempo. El sistema mide recompensa acumulada, retorno descontado, recolecciones y rescates durante episodios de 100 turnos. Como extensión, se incorpora un agente de Q-learning escrito en Python, inicializado sin experiencia, y una modalidad con recompensas por color. En ambas modalidades la batería se descarga en función del tiempo, con una tasa que cambia de una partida a otra.
 
 El sitio presenta el reporte y permite experimentar dentro de la misma página. Python ejecuta el entorno y el agente en un trabajador del navegador mediante Pyodide; JavaScript dibuja el tablero, captura los controles y muestra las métricas. La separación permite reutilizar el mismo entorno en experimentos fuera del navegador.
 
@@ -37,7 +37,7 @@ Experimentar el compromiso entre recolectar recompensas, preservar energía y ev
 | Casilla vacía / rescate | −0.05 / −3 | Iguales |
 | Esperar | +0.10 (la batería sigue bajando) | 0 (la batería sigue bajando) |
 | Descarga de batería | Función del tiempo: 1, 2, 4, 6 o 9 %/s, constante o intercalada, según la partida | Igual |
-| Avance manual | Una tecla válida, un turno | Un turno por segundo activo |
+| Avance manual | Movimiento inmediato; reloj independiente | Igual |
 | Recarga | R sobre la base: 100% | Igual |
 
 La modalidad Práctica conserva las reglas evaluables. La modalidad Extendida satisface el diseño adicional del videojuego y debe analizarse por separado. El PDF propone Python o MATLAB: aquí la lógica completa es Python y la interfaz web es una adaptación de presentación, no una implementación en Pygame/Tkinter. Se incluye además ejecución de entrenamiento con Python estándar.

@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Can Finder 5000 · Reporte</title><style>*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fafaf7;color:#273b40;font:16px/1.75 system-ui,sans-serif}nav{position:fixed;width:245px;height:100vh;background:#eeefe8;padding:35px 25px;border-right:1px solid #d5dbd2}nav strong{font:700 22px monospace;display:block;margin:20px 0 35px}nav a{display:block;font-size:14px;text-decoration:none;margin:14px 0;color:inherit}main{margin-left:245px;max-width:1180px;padding:40px 55px}section{padding:5px 0 45px;border-bottom:1px solid #d3dcd6;scroll-margin-top:20px}h1{font-size:42px;line-height:1.2;letter-spacing:-1.5px;margin-bottom:18px}h2{font-size:26px;line-height:1.35;margin:25px 0 18px}h3{font-size:20px;margin-top:32px}a{color:#1c786f}pre{padding:20px;background:#eaf0ea;overflow:auto;font-size:13px;border-radius:6px}code{font-size:13px}table{border-collapse:collapse;width:100%;font-size:14px}td{border:1px solid #ccd7d0;padding:10px 12px;vertical-align:top}tr:first-child{font-weight:700;background:#e6eee6}.table-wrap{overflow:auto}.cf-kicker{font:12px monospace;letter-spacing:2px;color:#687d6c}.cf-hero{padding:25px;border:1px solid #b9c8bc;border-left:5px solid #bd9139;background:linear-gradient(120deg,#f1eddd,#dfebe2);margin:30px 0;border-radius:7px}.cf-tags{font:12px monospace;color:#516b5b}.cf-game{width:100%;height:2000px;border:0;border-radius:8px}.badge{font:12px monospace;color:#98742b}button{border:1px solid #86958a;background:transparent;padding:10px 14px;border-radius:5px;color:inherit;cursor:pointer}body.dark{background:#152129;color:#e1e7df}body.dark nav{background:#1c2b33;border-color:#43555a}body.dark a{color:#8fd0b8}body.dark pre,body.dark tr:first-child{background:#243840}body.dark .cf-hero{background:#293d3c}body.dark td{border-color:#516263}body.dark .cf-tags,body.dark .cf-kicker{color:#b1c4b4}@media(max-width:850px){nav{position:static;width:100%;height:auto;padding:15px 22px}nav strong{margin:5px 0}nav a{display:inline-block;margin:5px 12px 5px 0}main{margin:0;padding:25px 20px}h1{font-size:34px}}@media print{nav,iframe,button{display:none!important}main{margin:0;padding:0;max-width:none}body{font-size:11px}section{break-before:page}section:first-child{break-before:auto}pre,table,.cf-hero{break-inside:avoid}}</style></head><body><nav><span class="badge">IBERO / PRÁCTICA 05</span><strong>CAN FINDER<br>5000</strong><a href="#index">01 &nbsp; Reporte</a><a href="#modelo">02 &nbsp; Modelo matemático</a><a href="#aprendizaje">03 &nbsp; Aprendizaje en Python</a><a href="#laboratorio">04 &nbsp; Laboratorio</a><a href="#bitacora">05 &nbsp; Bitácora</a><a href="#instalacion">06 &nbsp; Publicación</a><button id="theme">☀ / ☾ Cambiar tema</button></nav><main><section id="index"><div class="cf-kicker">IBERO CDMX / APRENDIZAJE REFORZADO / PRÁCTICA 05</div>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Can Finder 5000 · Reporte</title><style>*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fafaf7;color:#273b40;font:16px/1.75 system-ui,sans-serif}nav{position:fixed;width:245px;height:100vh;background:#eeefe8;padding:35px 25px;border-right:1px solid #d5dbd2}nav strong{font:700 22px monospace;display:block;margin:20px 0 35px}nav a{display:block;font-size:14px;text-decoration:none;margin:14px 0;color:inherit}main{margin-left:245px;max-width:1180px;padding:40px 55px}section{padding:5px 0 45px;border-bottom:1px solid #d3dcd6;scroll-margin-top:20px}h1{font-size:42px;line-height:1.2;letter-spacing:-1.5px;margin-bottom:18px}h2{font-size:26px;line-height:1.35;margin:25px 0 18px}h3{font-size:20px;margin-top:32px}a{color:#1c786f}pre{padding:20px;background:#eaf0ea;overflow:auto;font-size:13px;border-radius:6px}code{font-size:13px}table{border-collapse:collapse;width:100%;font-size:14px}td{border:1px solid #ccd7d0;padding:10px 12px;vertical-align:top}tr:first-child{font-weight:700;background:#e6eee6}.table-wrap{overflow:auto}.cf-kicker{font:12px monospace;letter-spacing:2px;color:#687d6c}.cf-hero{padding:25px;border:1px solid #b9c8bc;border-left:5px solid #bd9139;background:linear-gradient(120deg,#f1eddd,#dfebe2);margin:30px 0;border-radius:7px}.cf-tags{font:12px monospace;color:#516b5b}.cf-game{width:100%;height:2000px;border:0;border-radius:8px}.badge{font:12px monospace;color:#98742b}button{border:1px solid #86958a;background:transparent;padding:10px 14px;border-radius:5px;color:inherit;cursor:pointer}body.dark{background:#152129;color:#e1e7df}body.dark nav{background:#1c2b33;border-color:#43555a}body.dark a{color:#8fd0b8}body.dark pre,body.dark tr:first-child{background:#243840}body.dark .cf-hero{background:#293d3c}body.dark td{border-color:#516263}body.dark .cf-tags,body.dark .cf-kicker{color:#b1c4b4}@media(max-width:850px){nav{position:static;width:100%;height:auto;padding:15px 22px}nav strong{margin:5px 0}nav a{display:inline-block;margin:5px 12px 5px 0}main{margin:0;padding:25px 20px}h1{font-size:34px}}@media print{nav,iframe,button{display:none!important}main{margin:0;padding:0;max-width:none}body{font-size:11px}section{break-before:page}section:first-child{break-before:auto}pre,table,.cf-hero{break-inside:avoid}}</style><link rel="stylesheet" href="docs/retro.css?v=4"></head><body><nav><span class="badge">IBERO / PRÁCTICA 05</span><strong>CAN FINDER<br>5000</strong><a href="#index">01 &nbsp; Reporte</a><a href="#modelo">02 &nbsp; Modelo matemático</a><a href="#aprendizaje">03 &nbsp; Aprendizaje en Python</a><a href="#laboratorio">04 &nbsp; Laboratorio</a><a href="#instalacion">05 &nbsp; Publicación</a><button id="theme">☀ / ☾ Cambiar tema</button></nav><main><section id="index"><div class="cf-kicker">IBERO CDMX / APRENDIZAJE REFORZADO / PRÁCTICA 05</div>
 <h1>Can Finder 5000</h1>
 <h2>Un robot, cien decisiones y una batería finita</h2>
 <p><strong>Joshua Abdiel Barragán Guardado</strong>  </p>
@@ -8,7 +8,7 @@
 <p><a href="#laboratorio">Abrir el laboratorio</a></p>
 <p><a href="#modelo">Consultar el modelo</a></p>
 <h3>Resumen</h3>
-<p>Se implementa un entorno de recolección basado en procesos de decisión de Markov. El jugador controla un robot mediante el teclado y observa transiciones estocásticas de movimiento y energía. El sistema mide recompensa acumulada, retorno descontado, recolecciones y rescates durante episodios de 100 turnos. Como extensión, se incorpora un agente de Q-learning escrito en Python, inicializado sin experiencia, y una modalidad con recompensas por color. En ambas modalidades la batería se descarga en función del tiempo, con una tasa que cambia de una partida a otra.</p>
+<p>Se implementa un entorno de recolección basado en procesos de decisión de Markov. El jugador controla un robot mediante el teclado y observa movimiento estocástico y energía dependiente del tiempo. El sistema mide recompensa acumulada, retorno descontado, recolecciones y rescates durante episodios de 100 turnos. Como extensión, se incorpora un agente de Q-learning escrito en Python, inicializado sin experiencia, y una modalidad con recompensas por color. En ambas modalidades la batería se descarga en función del tiempo, con una tasa que cambia de una partida a otra.</p>
 <p>El sitio presenta el reporte y permite experimentar dentro de la misma página. Python ejecuta el entorno y el agente en un trabajador del navegador mediante Pyodide; JavaScript dibuja el tablero, captura los controles y muestra las métricas. La separación permite reutilizar el mismo entorno en experimentos fuera del navegador.</p>
 <h3>1. Objetivo</h3>
 <p>Experimentar el compromiso entre recolectar recompensas, preservar energía y evitar rescates; identificar estados, acciones, recompensas y transiciones; observar la diferencia entre una política humana y una política que aprende de su interacción.</p>
@@ -23,7 +23,7 @@
 <tr><td>Casilla vacía / rescate</td><td>−0.05 / −3</td><td>Iguales</td></tr>
 <tr><td>Esperar</td><td>+0.10 (la batería sigue bajando)</td><td>0 (la batería sigue bajando)</td></tr>
 <tr><td>Descarga de batería</td><td>Función del tiempo: 1, 2, 4, 6 o 9 %/s, constante o intercalada, según la partida</td><td>Igual</td></tr>
-<tr><td>Avance manual</td><td>Una tecla válida, un turno</td><td>Un turno por segundo activo</td></tr>
+<tr><td>Avance manual</td><td>Movimiento inmediato; reloj independiente</td><td>Igual</td></tr>
 <tr><td>Recarga</td><td>R sobre la base: 100%</td><td>Igual</td></tr>
 </tbody></table></div>
 <p>La modalidad Práctica conserva las reglas evaluables. La modalidad Extendida satisface el diseño adicional del videojuego y debe analizarse por separado. El PDF propone Python o MATLAB: aquí la lógica completa es Python y la interfaz web es una adaptación de presentación, no una implementación en Pygame/Tkinter. Se incluye además ejecución de entrenamiento con Python estándar.</p>
@@ -51,20 +51,19 @@ SH: E &gt; 40                    SL: 0 &lt; E ≤ 40
 
 ρ(τ) ∈ {1, 2, 4, 6, 9} %/s       tasa de desgaste en el segundo τ
 
-μ = ∫ ρ(τ) dτ  sobre el paso     descarga media del paso (Δt = 1 s)
-
-ΔE = max(0, μ(1 + ε)),  ε ~ N(0, 0.10²) recortado a ±0.3
+ΔE = ∫ ρ(τ) dτ  sobre el intervalo activo
 
 E&#x27; = E − ΔE
 
-α(E) = Φ((E − 40 − μ) / (0.10 μ))  para E &gt; 40
+α(E) = 1 si E − ∫[τ,τ+1]ρ(u)du &gt; 40; 0 en otro caso
 
-β(E) = Φ((E − μ) / (0.10 μ))        para 0 &lt; E ≤ 40
+β(E) = 1 si E − ∫[τ,τ+1]ρ(u)du &gt; 0; 0 en otro caso
 
 </code></pre>
-<p>Φ es la CDF normal estándar. α y β dependen de E y de la tasa vigente, no son constantes. <strong>La batería se descarga con el tiempo, no con cada movimiento</strong>: esperar, moverse o chocar con el borde consumen lo mismo durante el mismo intervalo. Cada partida usa un perfil de desgaste: constante en 1, 2, 4, 6 o 9 %/s, o *intercalado*, con tramos de 6 a 15 s cuya tasa cambia entre esos valores sin repetir la anterior. En modo *aleatorio* el perfil se sortea con la semilla de la partida. El ruido relativo de 10% mantiene el consumo aproximadamente lineal en el tiempo. El recorte max(0,·) evita cargar la batería con una muestra negativa y se declara como convención de implementación. En E=40 se usa el régimen bajo.</p>
-<p>Si E'≤0, el rescate asigna recompensa −3, incrementa el contador y retorna a (0,0,100%). Se evalúa el agotamiento <strong>antes de otorgar la recompensa de una lata</strong>. Una colisión no gasta energía adicional: solo corre el tiempo. Esperar también desgasta la batería. Recargar es instantáneo, no avanza la posición ni otorga puntos y nunca provoca un rescate en ese paso.</p>
-<p>En Extendida la fórmula es la misma, con Δt segundos activos por paso: μ = ∫ ρ(τ) dτ sobre ese intervalo. El reloj usa segundos <strong>activos de simulación</strong>, no tiempo de pared durante pausa, pestaña oculta, carga de Python o alerta de rescate. Cada paso dura Δt=1 s tanto en modo manual como automático y en entrenamiento acelerado. La animación puede acelerarse sin alterar el modelo. Al no elegir una acción, se ejecuta esperar. Recargar toma un turno y restablece a 100%.</p>
+<p>La descarga es exactamente lineal para tasa constante y lineal por tramos para el perfil intercalado. La tasa puede ser 1, 2, 4, 6 o 9 %/s. En el perfil intercalado cambia cada 6–15 segundos; el perfil aleatorio se sortea con la semilla por partida. No hay ruido adicional asociado a pulsar teclas. α y β son indicadores condicionados al perfil programado; el derrape sigue siendo aleatorio.</p>
+<p>En control manual, ambos modos usan un reloj de tiempo activo independiente del teclado. Moverse es inmediato y no añade un consumo fijo; quedarse inmóvil también descarga la batería. Los pulsos de reloj no cuentan como turnos ni dan puntos por esperar. Espacio sí cuenta como una acción de espera. Pausar, ocultar la pestaña y la animación de rescate detienen el reloj.</p>
+<p>En aprendizaje y evaluación, cada decisión representa 0.2 s simulados, es decir 5 decisiones por segundo. Las velocidades de reproducción y el entrenamiento acelerado no alteran ese intervalo. El horizonte sigue siendo 100 decisiones (20 s simulados). La autonomía desde 100% es 100, 50, 25, 16.7 u 11.1 segundos para tasas constantes de 1, 2, 4, 6 o 9 %/s.</p>
+<p>Al agotarse, se aplica −3, se vuelve a (0,0) y se restablece 100%. Recargar en la base restablece 100%, consume un turno y no da puntos. El modo manual no conserva un historial de acciones; el agente sí registra telemetría y balances exportables.</p>
 <h3>3. Derrape</h3>
 <pre><code>
 θ ~ N(0, 25²), en grados
@@ -95,7 +94,7 @@ Puntaje = Σ[t=0..99] rₜ
 G₀ = Σ[t=0..99] γᵗ rₜ,     γ = 0.95
 
 </code></pre>
-<p>Se cuentan exactamente 100 recompensas. La etiqueta G₀ indica el retorno descontado acumulado desde el inicio, no el retorno futuro de un estado intermedio. Esperar 100 turnos *sin agotar la batería* (solo posible si se recarga en la base a tiempo) produciría puntaje 10 y G₀ = 0.1(1−0.95¹⁰⁰)/(1−0.95) ≈ 1.98816; con el desgaste por tiempo, esperar sin recargar termina en rescates. Es una referencia analítica, <strong>no una partida humana registrada ni una prueba de optimalidad</strong>.</p></section><section id="aprendizaje"><h1>Aprendizaje por refuerzo</h1>
+<p>Se cuentan exactamente 100 recompensas. La etiqueta G₀ indica el retorno descontado acumulado desde el inicio, no el retorno futuro de un estado intermedio. Esperar 100 turnos *sin agotar la batería* (solo posible si se recarga en la base a tiempo) produciría puntaje 10 y G₀ = 0.1(1−0.95¹⁰⁰)/(1−0.95) ≈ 1.98816; con el desgaste por tiempo, esperar sin recargar puede terminar en rescates según la tasa y la duración. Es una referencia analítica, <strong>no una partida humana registrada ni una prueba de optimalidad</strong>.</p></section><section id="aprendizaje"><h1>Aprendizaje por refuerzo</h1>
 <h3>De una cadena de Markov a una política</h3>
 <p>Una cadena de Markov describe transiciones; un MDP añade acciones y recompensas. Al fijar una política π se induce una dinámica de Markov sobre un estado suficiente. Aquí se utiliza <strong>Q-learning</strong>, aprendizaje por refuerzo sin modelo: el agente desconoce las probabilidades de transición y aprende valores de acción con las recompensas observadas. No se calcula una ruta óptima mediante una regla preprogramada de regreso a la base.</p>
 <h3>Representación del agente</h3>
@@ -143,56 +142,15 @@ En el turno terminal: objetivo = r (sin bootstrap).
 python docs/game/core.py --episodes 1000 --mode practice --drain random --output training.json --telemetry-csv telemetria.csv --balance-csv balance.csv
 
 </code></pre>
-<p>Este comando genera datos de entrenamiento y, opcionalmente, los mismos CSV que descarga la interfaz; la interfaz gráfica se abre con <code>python run_local.py</code>. Pyodide 0.27.2 se descarga desde jsDelivr y requiere conexión. GitHub Pages entrega archivos estáticos; no se intenta ejecutar un servidor Python remoto.</p></section><section id="laboratorio"><h1>Laboratorio interactivo</h1>
-<p>Elige <strong>Práctica</strong> para las tres partidas evaluables. Haz clic en el tablero y usa las flechas, Espacio y R. Las acciones manuales quedan bloqueadas cuando Python controla el robot. En pantallas pequeñas puedes usar los botones táctiles.</p>
+<p>Este comando genera datos de entrenamiento y, opcionalmente, los mismos CSV que descarga la interfaz; la interfaz gráfica se abre con <code>python run_local.py</code>. Pyodide 0.27.2 se descarga desde jsDelivr y requiere conexión. GitHub Pages entrega archivos estáticos; no se intenta ejecutar un servidor Python remoto.</p>
+<p>Cada decisión del agente dura 0.2 segundos simulados. Cambiar la velocidad solo acelera la visualización; no cambia el consumo por segundo simulado.</p></section><section id="laboratorio"><h1>Laboratorio interactivo</h1>
+<p>Elige <strong>Práctica</strong> para recompensas uniformes o <strong>Extendida</strong> para recompensas por color. Haz clic en el tablero y usa las flechas, Espacio y R. Las acciones manuales quedan bloqueadas cuando Python controla el robot. En pantallas pequeñas puedes usar los botones táctiles.</p>
 <p><a href="docs/game/index.html">Abrir juego en una pestaña</a></p>
 <p>El botón <strong>Pantalla completa</strong> está dentro del juego. Al volver al reporte se conserva la sesión mientras no se recargue la página. La primera carga de Python puede tardar y requiere internet.</p>
 <iframe class="cf-game" src="docs/game/index.html" title="Can Finder 5000, simulador MDP y aprendizaje en Python" allow="fullscreen" allowfullscreen loading="eager"></iframe>
 <h3>Lectura de las métricas</h3>
 <p>La batería se descarga con el tiempo a una tasa de 1, 2, 4, 6 o 9 % por segundo, constante o intercalada; el selector <strong>Desgaste de batería</strong> fija el perfil o lo sortea por partida. La gráfica de batería contra tiempo muestra cómo baja y el umbral SH/SL del 40%. α(E) y β(E) dependen de la tasa vigente. La línea vertical roja en la curva gaussiana marca el último ángulo; las líneas de umbral están en ±30°. Debajo del tablero, el balance de recompensas separa lo ganado o perdido por latas, movimiento, espera y rescates.</p>
-<p>Cuando Python controla el robot (aprender o evaluar) aparece la sección <strong>Datos del agente</strong> con la descarga de telemetría, balance de recompensas y tabla Q. En modo manual no hay bitácora ni descargas; el botón <strong>Capturar pantalla</strong> guarda una imagen del tablero con su telemetría.</p></section><section id="bitacora"><h1>Bitácora de tres partidas</h1>
-<p><strong>Pendiente de ejecución por el jugador.</strong> No se sustituyen tus observaciones por recorridos automáticos. El laboratorio ya no incluye una bitácora interna: la evidencia se reúne con el botón <strong>Capturar pantalla</strong> (imagen PNG del tablero con su telemetría) y se completa aquí.</p>
-<h3>Procedimiento</h3>
-<ul>
-<li>Selecciona <strong>Práctica</strong>, elige una semilla y pulsa Nueva partida manual.</li>
-<li>Juega hasta el turno 100. No reinicies a mitad del episodio.</li>
-<li>Repite hasta reunir tres partidas (por ejemplo, semillas 42, 43 y 44).</li>
-<li>Al terminar cada partida, pulsa Capturar pantalla y conserva la imagen.</li>
-<li>Contesta las dos preguntas de abajo usando lo que realmente ocurrió.</li>
-<li>Completa la tabla y publica las capturas junto con tu conclusión en este archivo del repositorio.</li>
-</ul>
-<div class="table-wrap"><table><tbody>
-<tr><td>Partida</td><td>Semilla</td><td>Puntaje</td><td>G₀</td><td>Latas</td><td>Rescates</td><td>Evidencia</td></tr>
-<tr><td>1</td><td>Pendiente</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Pendiente</td></tr>
-<tr><td>2</td><td>Pendiente</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Pendiente</td></tr>
-<tr><td>3</td><td>Pendiente</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Pendiente</td></tr>
-</tbody></table></div>
-<h3>Reflexión solicitada</h3>
-<p><strong>¿Cuál fue tu política humana π(s) cuando el robot entraba en batería baja lejos de la base?</strong>  </p>
-<p>Pendiente de la experiencia del jugador. Conviene señalar posición, energía, distancia a la base y decisión concreta. No basta con indicar “regresar”: el derrape puede impedirlo y el presupuesto de energía suele ser menor que esa distancia.</p>
-<p><strong>¿En qué situaciones preferiste esperar en vez de arriesgarte a buscar una lata o regresar?</strong>  </p>
-<p>Pendiente de la experiencia del jugador. Relaciona el +0.10 seguro con el riesgo de −3, el horizonte restante y la recompensa de una lata.</p>
-<h3>Criterios de análisis</h3>
-<p>La distancia Manhattan d = x+y es un mínimo de movimientos para volver sin derrapes. No es una garantía de supervivencia. Con una tasa de 4 %/s la batería dura unos 25 turnos y con 9 %/s apenas 11; a 1 %/s alcanza para toda la partida. Alcanzar latas concentradas en (6,6) y regresar es una tensión de diseño que cambia con el perfil de desgaste: anota qué perfil te tocó en cada partida. Compara el desempeño humano con la referencia analítica de esperar y, después, con evaluaciones de un agente entrenado.</p>
-<h3>Trazabilidad con la práctica</h3>
-<div class="table-wrap"><table><tbody>
-<tr><td>Requisito</td><td>Implementación / evidencia</td></tr>
-<tr><td>Cuadrícula 10 × 10 y base (0,0)</td><td><code>World</code>, Canvas</td></tr>
-<tr><td>12 latas y normal bivariada</td><td><code>World.spawn</code>, reposición inmediata</td></tr>
-<tr><td>SH/SL y energía continua</td><td><code>World.energy</code>, umbral 40</td></tr>
-<tr><td>Flechas / Espacio / R</td><td>Controles del laboratorio</td></tr>
-<tr><td>Consumo de batería</td><td>Función del tiempo (1–9 %/s, constante o intercalada) en <code>World.step</code>, <code>rate_at</code> e <code>integrate</code></td></tr>
-<tr><td>Derrape y colisión</td><td><code>World.step</code>, σθ=25° documentada</td></tr>
-<tr><td>Recompensas de la tabla</td><td>Modo Práctica</td></tr>
-<tr><td>Rescate −3 y regreso al inicio</td><td>Motor y alerta zZz/X roja</td></tr>
-<tr><td>100 turnos y γ=0.95</td><td>Motor, panel y exportación</td></tr>
-<tr><td>Tablero izquierdo / telemetría derecha</td><td>Interfaz adaptable</td></tr>
-<tr><td>Entorno separado de GUI</td><td>Python independiente y JavaScript visual</td></tr>
-<tr><td>Código Python ejecutable</td><td><code>core.py</code>, CLI y Pyodide</td></tr>
-<tr><td>3 partidas, capturas y reflexión</td><td>Captura de pantalla implementada; ejecución humana pendiente</td></tr>
-<tr><td>Extensión solicitada de aprendizaje</td><td>Q-learning sin experiencia inicial</td></tr>
-<tr><td>Página con reporte y juego ampliable</td><td>Just the Docs, iframe y Fullscreen API</td></tr>
-</tbody></table></div></section><section id="instalacion"><h1>Ejecutar y publicar</h1>
+<p>Cuando Python controla el robot (aprender o evaluar) aparece la sección <strong>Datos del agente</strong> con la descarga de telemetría, balance de recompensas y tabla Q. En modo manual no hay bitácora ni descargas; el botón <strong>Capturar pantalla</strong> guarda una imagen del tablero con su telemetría.</p></section><section id="instalacion"><h1>Ejecutar y publicar</h1>
 <h3>En tu computadora</h3>
 <p>Descomprime el proyecto. En una terminal dentro de la carpeta ejecuta:</p>
 <pre><code>

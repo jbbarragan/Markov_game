@@ -59,3 +59,5 @@ python docs/game/core.py --episodes 1000 --mode practice --drain random --output
 ```
 
 Este comando genera datos de entrenamiento y, opcionalmente, los mismos CSV que descarga la interfaz; la interfaz gráfica se abre con `python run_local.py`. Pyodide 0.27.2 se descarga desde jsDelivr y requiere conexión. GitHub Pages entrega archivos estáticos; no se intenta ejecutar un servidor Python remoto.
+
+Cada decisión del agente dura 0.2 segundos simulados. Cambiar la velocidad solo acelera la visualización; no cambia el consumo por segundo simulado.

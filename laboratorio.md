@@ -5,7 +5,7 @@ nav_order: 4
 ---
 # Laboratorio interactivo
 
-Elige **Práctica** para las tres partidas evaluables. Haz clic en el tablero y usa las flechas, Espacio y R. Las acciones manuales quedan bloqueadas cuando Python controla el robot. En pantallas pequeñas puedes usar los botones táctiles.
+Elige **Práctica** para recompensas uniformes o **Extendida** para recompensas por color. Haz clic en el tablero y usa las flechas, Espacio y R. Las acciones manuales quedan bloqueadas cuando Python controla el robot. En pantallas pequeñas puedes usar los botones táctiles.
 
 [Abrir juego en una pestaña]({{ '/game/index.html' | relative_url }}){: .btn .btn-primary target="_blank" }
 

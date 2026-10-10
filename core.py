@@ -12,7 +12,7 @@ VALUES = [1., 2., 4.]
 # Desgaste de batería: función del TIEMPO, no del movimiento (puntos porcentuales por segundo).
 RATES = [1., 2., 4., 6., 9.]
 DRAIN_OPTIONS = ['random', '1', '2', '4', '6', '9', 'mixed']
-NOISE = .10            # variación relativa del consumo por paso (≈ lineal, con ruido pequeño)
+NOISE = 0.0            # descarga exacta por tiempo: independiente de cuántas acciones se ejecuten
 SEGMENT_SECONDS = (6, 15)   # duración de cada tramo en el perfil intercalado
 BALANCE_KEYS = ['latas', 'movimiento', 'espera', 'rescates', 'recarga']
 
@@ -99,18 +99,19 @@ class World:
         return list(range(6 if (self.x,self.y)==(0,0) else 5))
 
     # ---------- transición ----------
-    def step(self, action, dt=1.):
-        if self.t >= 100 or action not in self.actions(): return False
+    def step(self, action, dt=1., record=True):
+        if self.t >= 100 or (action is not None and action not in self.actions()): return False
         x0, y0, e0 = self.x, self.y, self.energy
-        dt = 1. if self.mode == 'practice' else max(0., float(dt))
+        dt = max(0., float(dt))
+        if not math.isfinite(dt): raise ValueError("dt debe ser finito")
         rate0 = self.rate_at(self.elapsed)
         mean_drain = self.integrate(self.elapsed, self.elapsed + dt)
         self.elapsed += dt
         angle = reward = 0.
-        message, kind = NAMES[action], 'recarga'
+        message, kind = (NAMES[action], 'recarga') if action is not None else ('Reloj activo · descarga por tiempo', 'espera')
         # La batería baja con el tiempo, haga lo que haga el robot. La recarga es instantánea.
-        drain = 0. if action == 5 else max(0., mean_drain * (1 + max(-.3, min(.3, self.nrng.gauss(0, NOISE)))))
-        if action < 4:
+        drain = 0. if action == 5 else mean_drain
+        if action is not None and action < 4:
             angle = self.rng.gauss(0, 25)
             direction = (action + (1 if angle > 30 else -1 if angle < -30 else 0)) % 4
             dx, dy = DIRS[direction]
@@ -134,7 +135,7 @@ class World:
         elif action == 5:
             self.energy = 100.
             message = 'Recarga completa · 100%'
-        elif action < 4 and (self.x,self.y) in self.cans:
+        elif action is not None and action < 4 and (self.x,self.y) in self.cans:
             color = self.cans.pop((self.x,self.y))
             reward = 1. if self.mode=='practice' else VALUES[color]
             kind = 'latas'
@@ -145,10 +146,13 @@ class World:
         self.score += reward
         self.discounted += .95**self.t * reward
         self.balance[kind] += reward
-        self.counts[kind] += 1
-        self.t += 1
-        self.last = dict(message=message, drain=drain, angle=angle, reward=reward, rescue=rescue, old=[x0,y0])
-        self.log.append(dict(turn=self.t, action=NAMES[action], x0=x0,y0=y0,energy0=e0,x=self.x,y=self.y,energy=self.energy,
+        if action is not None or rescue: self.counts[kind] += 1
+        if action is not None: self.t += 1
+        if action is None and not rescue:
+            self.last = dict(self.last, rescue=False)
+        else:
+            self.last = dict(message=message, drain=drain, angle=angle, reward=reward, rescue=rescue, old=[x0,y0])
+        if record: self.log.append(dict(turn=self.t, action=NAMES[action] if action is not None else 'Reloj', x0=x0,y0=y0,energy0=e0,x=self.x,y=self.y,energy=self.energy,
                              rate=rate0,drain=drain,angle=angle,reward=reward,reward_type=kind,score=self.score,
                              discounted=self.discounted,rescue=rescue,dt=dt,elapsed=self.elapsed,
                              seed=self.seed,profile=self.profile))
@@ -168,7 +172,7 @@ class World:
         mu=self.integrate(self.elapsed, self.elapsed + 1.)
         sigma=max(1e-9, NOISE*mu)
         return dict(mode=self.mode,seed=self.seed,x=self.x,y=self.y,t=self.t,energy=e,high=e>40,score=self.score,discounted=self.discounted,caught=self.caught,rescues=self.rescues,cans=[[x,y,c] for (x,y),c in self.cans.items()],last=self.last,elapsed=self.elapsed,
-                    alpha=phi((e-40-mu)/sigma) if e>40 else None,beta=phi((e-mu)/sigma) if e<=40 else None,done=self.t>=100,
+                    alpha=float(e-mu>40) if e>40 else None,beta=float(e-mu>0) if e<=40 else None,done=self.t>=100,
                     rate=self.rate_at(self.elapsed),profile=self.profile,profile_label=self.profile_label(),drain_option=self.drain_opt,
                     autonomy=self.autonomy(),balance=self.balance,counts=self.counts)
 
@@ -212,7 +216,7 @@ class Learner:
         eps=self.epsilon if learn else 0.
         q_before=self.q.get(key,[0.]*6)[a]
         episode=self.episodes+1 if learn else len(self.eval_history)+1
-        w.step(a,1.)
+        w.step(a,.2)
         td=None
         if learn:
             target=w.last['reward']
@@ -250,7 +254,8 @@ def dispatch(raw):
     if op=='reset':
         world=World(req.get('mode','practice'),req.get('seed',42),req.get('drain','random'))
         if req.get('fresh'): agent=Learner(req.get('seed',42))
-    elif op=='step': world.step(req['action'],req.get('dt',1))
+    elif op=='step': world.step(req['action'],req.get('dt',0),record=False)
+    elif op=='clock': world.step(None,req.get('dt',0),record=False)
     elif op=='auto': agent.advance(world,req.get('learn',True)) if world.t<100 else None
     elif op=='train':
         mode,drain=world.mode,world.drain_opt
@@ -263,7 +268,7 @@ def dispatch(raw):
         text,n=agent.csv(req.get('kind','telemetry'))
         return json.dumps(dict(csv=text,rows=n))
     elif op=='export':
-        return json.dumps(dict(state=world.state(),log=world.log,training=agent.history,evaluation=agent.eval_history,q=[dict(state=list(k),values=v) for k,v in agent.q.items()],parameters=dict(gamma=.95,learning_rate=.15,epsilon=agent.epsilon,drain_option=world.drain_opt)))
+        return json.dumps(dict(state=world.state(),log=world.log,training=agent.history,evaluation=agent.eval_history,q=[dict(state=list(k),values=v) for k,v in agent.q.items()],parameters=dict(gamma=.95,learning_rate=.15,epsilon=agent.epsilon,drain_option=world.drain_opt,agent_dt_seconds=.2)))
     return json.dumps(dict(state=world.state(),agent=dict(episodes=agent.episodes,epsilon=agent.epsilon,states=len(agent.q),explorations=agent.explorations,exploitations=agent.exploitations,history=agent.history[-200:],telemetry_rows=len(agent.telemetry),evaluations=len(agent.eval_history))))
 
 if __name__=='__main__':

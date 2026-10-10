@@ -4,9 +4,14 @@ from pathlib import Path
 from functools import partial
 import webbrowser
 
+class FreshFiles(SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header('Cache-Control', 'no-store')
+        super().end_headers()
+
 if __name__ == '__main__':
     root = Path(__file__).resolve().parent
-    server = ThreadingHTTPServer(('127.0.0.1', 8000), partial(SimpleHTTPRequestHandler, directory=str(root)))
+    server = ThreadingHTTPServer(('127.0.0.1', 8000), partial(FreshFiles, directory=str(root)))
     url='http://127.0.0.1:8000/reporte-local.html'
     print('Reporte:',url, '\nCtrl+C para cerrar. Python del navegador requiere internet.')
     webbrowser.open(url)

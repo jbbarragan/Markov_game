@@ -1,8 +1,9 @@
 'use strict';
 const $=id=>document.getElementById(id), canvas=$('map'), ctx=canvas.getContext('2d');
-const worker=new Worker('worker.js?v=3');
+const worker=new Worker('worker.js?v=4');
 const FONT='"Press Start 2P","Courier New",monospace', BKEYS=['latas','movimiento','espera','rescates'];
-let serial=0, pending=new Map(), state=null, agent=null, busy=false, paused=false, pilot='manual', queued=4, timer=0, batch=false, rescueUntil=0, trace=[], lastT=-1;
+let serial=0, pending=new Map(), state=null, agent=null, busy=false, paused=false, pilot='manual', queued=4, timer=0, batch=false, rescueUntil=0, trace=[], lastT=-1, clockAt=performance.now(), lastManual=0;
+function clockDelta(){const now=performance.now(),dt=Math.max(0,(now-clockAt)/1000);clockAt=now;return dt;}
 const col=name=>getComputedStyle(document.body).getPropertyValue(name).trim()||'#888';
 function lock(){for(const id of ['mode','drain','seed','reset','ai','train','evaluate','export','dlTele','dlBal'])$(id).disabled=busy||batch;}
 function rpc(op,fields={}){return new Promise((resolve,reject)=>{const id=++serial;pending.set(id,{resolve,reject});worker.postMessage({id,op,...fields});});}
@@ -60,14 +61,14 @@ function redraw(){draw();gaussian();batteryTrace();chart();}
 const bat=$('battery');for(let i=0;i<20;i++)bat.append(document.createElement('i'));
 const sign=v=>(v<0?'−':'+')+Math.abs(v).toFixed(2);
 function render(result){state=result.state;agent=result.agent;
-  if(state.t===0)trace=[[0,state.energy]];else if(state.t!==lastT)trace.push([state.elapsed,state.energy]);lastT=state.t;
+  if(state.elapsed===0)trace=[[0,state.energy]];else if(!trace.length||state.elapsed!==trace[trace.length-1][0])trace.push([state.elapsed,state.energy]);lastT=state.t;
   $('position').textContent=`POSICIÓN (${state.x}, ${state.y}) · 10 × 10`;
   const lit=Math.ceil(state.energy/5);[...bat.children].forEach((b,i)=>b.classList.toggle('on',i<lit));bat.classList.toggle('low',!state.high);
   $('energy').textContent=state.energy.toFixed(1)+'%';$('state').textContent=state.high?'ALTO · SH':'BAJO · SL';$('state').style.color=state.high?col('--green'):col('--red');
   $('rate').textContent=state.rate+' %/s';$('autonomy').textContent='AUTONOMÍA ≈ '+Math.round(state.autonomy)+' s';
   document.querySelectorAll('#pips span').forEach(s=>s.classList.toggle('on',Number(s.dataset.r)===state.rate));
   $('profile').textContent=state.profile==='mixed'?'Perfil: intercalado, la tasa cambia entre 1 y 9 %/s a lo largo de la partida.':`Perfil: constante ${state.rate} %/s`+(state.drain_option==='random'?' (sorteado para esta partida).':'.');
-  for(const [id,value]of Object.entries({turn:`${state.t}/100`,score:state.score.toFixed(2),cans:state.caught,rescues:state.rescues,return:state.discounted.toFixed(3),time:state.elapsed.toFixed(0)+' s','drain-last':state.last.drain.toFixed(2),angle:state.last.angle.toFixed(2),transition:state.last.message}))$(id).textContent=value;
+  for(const [id,value]of Object.entries({turn:`${state.t}/100`,score:state.score.toFixed(2),cans:state.caught,rescues:state.rescues,return:state.discounted.toFixed(3),time:state.elapsed.toFixed(1)+' s','drain-last':state.last.drain.toFixed(2),angle:state.last.angle.toFixed(2),transition:state.last.message}))$(id).textContent=value;
   for(const k of BKEYS){const b=state.balance[k],el=$('b-'+k);el.textContent=sign(b);el.className=b>0?'pos':b<0?'neg':'';$('n-'+k).textContent='×'+state.counts[k];}
   $('prob').textContent=(state.high?'α(E) = '+(state.alpha*100).toFixed(1)+'% · seguir alto':'β(E) = '+(state.beta*100).toFixed(1)+'% · sobrevivir')+' en el siguiente segundo';
   $('pilot').textContent=pilot==='manual'?'CONTROL MANUAL':pilot==='learn'?'PYTHON · APRENDIENDO':'PYTHON · EVALUACIÓN';
@@ -77,27 +78,27 @@ function render(result){state=result.state;agent=result.agent;
   $('v2').textContent=state.mode==='practice'?'+1':'+2';$('v3').textContent=state.mode==='practice'?'+1':'+4';
   if(state.last.rescue){rescueUntil=performance.now()+850;$('alert').hidden=false;setTimeout(()=>{$('alert').hidden=true;draw();},870);}
   redraw();
-  $('status').textContent=state.done?'Partida terminada · 100 turnos. '+(pilot==='manual'?'Pulsa Nueva partida manual para jugar otra.':'El siguiente episodio comienza automáticamente.'):(paused?'Pausado.':pilot==='manual'?(state.mode==='practice'?'Tu decisión es la política. Cada tecla válida avanza un turno.':'Tiempo activo: una decisión por segundo. Sin acción, el robot espera y consume batería.'):'Python decide las acciones. '+(pilot==='learn'?'Q se actualiza con cada transición.':'Q permanece fija.'));
+  $('status').textContent=state.done?'Partida terminada · 100 turnos. '+(pilot==='manual'?'Pulsa Nueva partida manual para jugar otra.':'El siguiente episodio comienza automáticamente.'):(paused?'Pausado.':pilot==='manual'?'Flechas: movimiento inmediato. La batería baja por segundo, incluso sin moverte.':'Python decide las acciones. '+(pilot==='learn'?'Q se actualiza con cada transición.':'Q permanece fija.'));
 }
 async function newGame(fresh=false,nextPilot='manual'){
   if(busy||batch)return;busy=true;lock();clearTimeout(timer);
-  try{pilot=nextPilot;paused=false;$('pause').textContent='Pausar';queued=4;render(await rpc('reset',{mode:$('mode').value,seed:seedValue(),drain:$('drain').value,fresh}));}catch(e){fail(e);}finally{busy=false;lock();schedule();}
+  try{pilot=nextPilot;paused=false;$('pause').textContent='Pausar';queued=4;render(await rpc('reset',{mode:$('mode').value,seed:seedValue(),drain:$('drain').value,fresh}));}catch(e){fail(e);}finally{clockAt=performance.now();busy=false;lock();schedule();}
 }
 async function action(a){if(busy||paused||!state||state.done||batch||performance.now()<rescueUntil)return;busy=true;
-  try{render(await rpc('step',{action:a,dt:1}));}catch(e){fail(e);}finally{busy=false;}}
-function schedule(){clearTimeout(timer);if(!state||paused||batch)return;timer=setTimeout(tick,pilot==='manual'?1000:Number($('speed').value));}
-async function tick(){if(paused||batch)return;if(document.hidden){schedule();return;}if(busy||performance.now()<rescueUntil){schedule();return;}
-  if(pilot==='manual'){if(state.mode==='extended'&&!state.done){const a=queued;queued=4;await action(a);}schedule();return;}
+  try{render(await rpc('step',{action:a,dt:clockDelta()}));}catch(e){fail(e);}finally{busy=false;}}
+function schedule(){clearTimeout(timer);if(!state||paused||batch)return;timer=setTimeout(tick,pilot==='manual'?100:Number($('speed').value));}
+async function tick(){if(paused||batch)return;if(document.hidden){clockAt=performance.now();schedule();return;}if(busy||performance.now()<rescueUntil){clockAt=performance.now();schedule();return;}
+  if(pilot==='manual'){if(!state.done){busy=true;try{render(await rpc('clock',{dt:clockDelta()}));}catch(e){fail(e);}finally{busy=false;}}schedule();return;}
   busy=true;try{if(state.done){if(pilot==='eval'){paused=true;$('status').textContent='Evaluación terminada. Datos disponibles para descargar.';}else{render(await rpc('reset',{mode:state.mode,seed:Math.floor(Math.random()*2147483647),drain:state.drain_option}));}}else{render(await rpc('auto',{learn:pilot==='learn'}));}}catch(e){fail(e);}finally{busy=false;lock();schedule();}}
-function manual(a){if(pilot!=='manual'||busy||batch||paused)return;if(a===5&&state&&(state.x!==0||state.y!==0)){$('status').textContent='Solo puedes recargar en la estación (0,0).';return;}if(state?.mode==='extended'){queued=a;$('status').textContent='Siguiente acción: '+['Norte','Este','Sur','Oeste','Esperar','Recargar'][a];}else action(a);}
+function manual(a){if(pilot!=='manual'||busy||batch||paused||document.hidden)return;if(performance.now()-lastManual<120)return;if(a===5&&state&&(state.x!==0||state.y!==0)){$('status').textContent='Solo puedes recargar en la estación (0,0).';return;}lastManual=performance.now();action(a);}
 $('reset').onclick=()=>{$('seed').value=seedValue()+1;newGame(false,'manual');};   /* semilla nueva = partida y desgaste nuevos */
 $('ai').onclick=()=>newGame(true,'learn');$('mode').onchange=()=>newGame(true,'manual');$('drain').onchange=()=>newGame(false,'manual');
-$('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'Reanudar':'Pausar';$('status').textContent=paused?'Pausado.':'Simulación activa.';schedule();};
+$('pause').onclick=()=>{paused=!paused;clockAt=performance.now();$('pause').textContent=paused?'Reanudar':'Pausar';$('status').textContent=paused?'Pausado.':'Simulación activa.';schedule();};
 $('evaluate').onclick=()=>newGame(false,'eval');$('speed').onchange=schedule;
 $('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{$('status').textContent='Pantalla completa no disponible aquí. Abre el juego en una pestaña independiente.';}};
 for(const b of document.querySelectorAll('[data-action]'))b.onclick=()=>manual(Number(b.dataset.action));
-canvas.addEventListener('keydown',e=>{const map={ArrowUp:0,ArrowRight:1,ArrowDown:2,ArrowLeft:3,' ':4,r:5,R:5};if(e.key in map){e.preventDefault();if(!e.repeat)manual(map[e.key]);}});
-$('train').onclick=async()=>{if(busy||batch||!state)return;batch=true;paused=false;clearTimeout(timer);$('train').disabled=true;lock();
+canvas.addEventListener('keydown',e=>{const map={ArrowUp:0,ArrowRight:1,ArrowDown:2,ArrowLeft:3,' ':4,r:5,R:5};if(e.key in map){e.preventDefault();manual(map[e.key]);}});
+$('train').onclick=async()=>{if(busy||batch||!state)return;batch=true;pilot='learn';paused=false;clearTimeout(timer);$('train').disabled=true;lock();
   try{for(let i=0;i<50;i++){if(paused)break;render(await rpc('train',{count:10}));$('status').textContent=`Entrenando Python: ${(i+1)*10} / 500 episodios adicionales… Pausar detiene al terminar este bloque.`;}pilot='eval';render(await rpc('state'));}catch(e){fail(e);}finally{batch=false;lock();schedule();}};
 /* Descargas del agente: solo visibles cuando Python controla el robot */
 async function csvDownload(kind,name){if(!state)return;try{const r=await rpc('csv',{kind});download(name,'\ufeff'+r.csv,'text/csv;charset=utf-8');$('dlinfo').textContent=`${name}: ${r.rows} filas descargadas.`;}catch(e){fail(e);}}
@@ -108,6 +109,7 @@ $('export').onclick=async()=>{if(!state)return;try{download('can-finder-q-parame
 function snapshot(){const c=document.createElement('canvas');c.width=760;c.height=470;const g=c.getContext('2d');g.imageSmoothingEnabled=false;g.fillStyle=col('--bg');g.fillRect(0,0,760,470);g.drawImage(canvas,15,50,400,400);g.fillStyle=col('--text');g.font='bold 13px '+FONT;g.fillText('CAN FINDER 5000 · '+(state.mode==='practice'?'PRÁCTICA':'EXTENDIDA'),15,30);g.font='10px '+FONT;
   [`Turno: ${state.t}/100`,`Bateria: ${state.energy.toFixed(1)}%`,state.high?'Estado ALTO (SH)':'Estado BAJO (SL)',`Desgaste: ${state.rate} %/s`,`Puntaje: ${state.score.toFixed(2)}`,`G0: ${state.discounted.toFixed(3)}`,`Latas: ${state.caught}`,`Rescates: ${state.rescues}`,`Angulo: ${state.last.angle.toFixed(2)}`,`Semilla: ${state.seed}`,`Control: ${pilot}`].forEach((s,i)=>g.fillText(s,435,75+i*31));return c.toDataURL('image/png');}
 $('capture').onclick=()=>{if(!state)return;const a=document.createElement('a');a.href=snapshot();a.download='can-finder-captura.png';a.click();};
+document.addEventListener('visibilitychange',()=>{clockAt=performance.now();});
 window.addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.theme){document.body.classList.toggle('light',e.data.theme==='light');if(state)$('state').style.color=state.high?col('--green'):col('--red');redraw();}});
 document.fonts?.ready.then(()=>{if(state)redraw();else draw();});
 draw();gaussian();batteryTrace();chart();newGame(true);

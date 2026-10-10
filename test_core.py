@@ -91,8 +91,8 @@ class TestTimeDrain(unittest.TestCase):
     def test_forced_option_wins_over_random(self):
         for opt in ['1','2','4','6','9','mixed']: self.assertEqual(World(seed=3,drain=opt).profile,opt)
     def test_probabilities_follow_current_rate(self):
-        w=World(drain='2');w.energy=42;self.assertAlmostEqual(w.state()['alpha'],.5)
-        w.energy=2;self.assertAlmostEqual(w.state()['beta'],.5)
+        w=World(drain='2');w.energy=42;self.assertEqual(w.state()['alpha'],0)
+        w.energy=2;self.assertEqual(w.state()['beta'],0)
     def test_balance_adds_up_to_score(self):
         for seed in range(10):
             w=World(seed=seed);a=Learner(seed)
@@ -138,5 +138,31 @@ class TestAgent(unittest.TestCase):
         self.assertEqual(out['agent']['episodes'],2);self.assertEqual(out['state']['drain_option'],'9')
         res=json.loads(core.dispatch(json.dumps(dict(op='csv',kind='balance'))))
         self.assertEqual(res['rows'],2);self.assertIn('reward_latas',res['csv'])
+
+
+
+class TestIndependentClock(unittest.TestCase):
+    def test_many_moves_same_time_as_idle(self):
+        for mode in ['practice','extended']:
+            idle=World(mode,drain='4');moving=World(mode,drain='4')
+            idle.step(None,2,record=False)
+            for _ in range(20):moving.step(0,.1,record=False)
+            self.assertAlmostEqual(idle.energy,92)
+            self.assertAlmostEqual(moving.energy,idle.energy)
+            self.assertEqual(idle.t,0)
+            self.assertEqual(idle.score,0)
+            self.assertEqual(idle.log,[])
+    def test_idle_rescue_and_no_movement_cost(self):
+        w=World(drain='9');w.energy=.5
+        w.step(None,.1,record=False)
+        self.assertEqual(w.rescues,1);self.assertEqual(w.score,-3)
+        self.assertEqual(w.energy,100);self.assertEqual(w.t,0)
+        for _ in range(20):w.step(0,0,record=False)
+        self.assertEqual(w.energy,100)
+    def test_agent_duration_is_five_decisions_per_second(self):
+        w=World(drain='1');a=Learner();a.choose=lambda *_:4
+        for _ in range(100):a.advance(w)
+        self.assertAlmostEqual(w.elapsed,20)
+        self.assertAlmostEqual(w.energy,80)
 
 if __name__=='__main__': unittest.main()

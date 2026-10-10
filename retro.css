@@ -1,0 +1,15 @@
+/* Interfaz del reporte: misma paleta y fuentes locales que el juego. */
+@font-face{font-family:Retro;src:url(game/fonts/vt323-latin-400-normal.woff2)}
+@font-face{font-family:Pixel;src:url(game/fonts/press-start-2p-latin-400-normal.woff2)}
+:root{--paper:#e8e0c2;--panel:#f6efd4;--ink:#2b2438;--border:#645877;--link:#116b70}
+body.dark,html[data-theme=dark]{--paper:#10131f;--panel:#1a2136;--ink:#f4efdc;--border:#536186;--link:#55dbe8}
+body,.main,.main-content,.main-header{background:var(--paper)!important;color:var(--ink)!important;font:22px/1.45 Retro,monospace!important}
+nav,.side-bar{background:var(--panel)!important;color:var(--ink)!important;border-right:4px solid var(--border)!important}
+h1,h2,h3,.site-title,nav strong{font-family:Pixel,monospace!important;letter-spacing:0!important;line-height:1.7!important;color:var(--ink)!important}
+h1{font-size:24px!important}h2{font-size:16px!important}h3{font-size:12px!important}
+a{color:var(--link)!important}nav a,.nav-list-link{font:20px/1.4 Retro,monospace!important}
+pre,code,table,button,.btn,.cf-tags,.cf-kicker{font-family:Retro,monospace!important;font-size:20px!important}
+pre,.cf-hero,table,button,.btn{background:var(--panel)!important;color:var(--ink)!important;border:3px solid var(--border)!important;border-radius:0!important;box-shadow:4px 4px 0 #04050c!important}
+.cf-hero h2,.cf-kicker,.cf-tags{color:var(--ink)!important}.cf-game{border-radius:0!important;border:4px solid var(--border)!important;height:2400px}
+td,th{border:2px solid var(--border)!important}tr:first-child{background:var(--panel)!important}button{cursor:pointer}*{border-radius:0!important}
+@media(max-width:700px){h1{font-size:19px!important}.cf-game{height:3400px}}
