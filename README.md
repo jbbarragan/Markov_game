@@ -1,3 +1,5 @@
+> **Corrección de publicación:** consulta `LEEME_CORRECCION.md`. Primero activa GitHub Actions en Settings → Pages.
+
 # Can Finder 5000 — Práctica 5
 
 Reporte Just the Docs + juego Canvas de estética 16 bits + motor y Q-learning en Python.
