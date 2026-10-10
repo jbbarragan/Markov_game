@@ -1,16 +1,14 @@
 # Verificación de la entrega
 
-- 14 pruebas automáticas del entorno y del agente: aprobadas con Python 3.12.
-- Casos: estados iniciales y generación, esperar 100 turnos y G0 analítico, bordes, derrape, precedencia del rescate sobre recogida, recarga válida/inválida, descarga temporal, recompensas de color, reproducibilidad por semilla, probabilidades, bootstrap terminal, evaluación sin modificar Q e invariantes en 20 episodios.
-- Ejecución adicional de 20 episodios mediante CLI: completada, JSON válido.
-- Sintaxis JavaScript de interfaz y worker: verificada con `node --check`.
-- YAML de configuración y workflow: parseado correctamente.
-- Sintaxis de archivos Python: verificada.
+- 22 pruebas automáticas del entorno y del agente: aprobadas con Python 3.12.
+- Desgaste de batería: tasas constantes de 1, 2, 4, 6 y 9 %/s lineales en el tiempo; descarga idéntica al esperar o moverse; perfil intercalado por tramos (aditividad de la integral); perfil aleatorio reproducible por semilla; recarga instantánea que nunca provoca rescate; α y β según la tasa vigente.
+- Balance de recompensas: la suma por tipo (latas, movimiento, espera, rescates, recarga) coincide con el puntaje, y los eventos suman 100 por episodio.
+- Exportaciones: telemetría CSV (400 filas en la prueba, columnas fijas, fases de entrenamiento y evaluación) y balance CSV (una fila por episodio) generadas por el mismo código que usa la interfaz; entrenamiento por CLI con `--telemetry-csv` y `--balance-csv`.
+- Interfaz comprobada en Chromium headless con el motor Python real (sin Pyodide): partida manual con desgaste 4 %/s, perfil intercalado, semilla que avanza en «Nueva partida manual», entrenamiento de +500 episodios, descargas visibles solo con Python al control, tres descargas funcionales, temas oscuro y claro, ancho de 420, 900 y 1280 px, sin errores de consola.
+- Sintaxis JavaScript de interfaz verificada con `node --check`. YAML de configuración y workflow: parseado correctamente.
 
-Límites: no se ejecutó una comprobación visual en navegador, ni se descargó Pyodide dentro de un navegador, ni se construyó Jekyll en este entorno. GitHub Actions realiza la construcción al subir el repositorio. No se ha publicado el sitio ni se ha creado un repositorio de GitHub. Se requiere una comprobación final de teclado, pantalla completa y carga de Python en el navegador del usuario.
-
-Las pruebas del software no sustituyen las tres partidas humanas de la práctica. El reporte deja esa evidencia pendiente y el juego proporciona captura y exportación para generarla.
+Límites: la comprobación visual usó un servidor local que expone el mismo `core.py`; no se descargó Pyodide dentro del navegador de prueba ni se construyó Jekyll aquí (lo hace GitHub Actions). El aprendizaje por refuerzo con esperas sigue siendo una política atractiva en Práctica; las pruebas no sustituyen las tres partidas humanas de la práctica.
 
 ## Corrección de despliegue
 
-Se verificó el intento 38073801796 por la API pública de GitHub. El fallo fue `configure-pages`: sitio Pages no encontrado. Las pruebas habían pasado; Jekyll quedó omitido. Se corrigieron también las dependencias declaradas del tema. Ver `LEEME_CORRECCION.md`.
+Ver `LEEME_CORRECCION.md`. `docs/Gemfile` y `docs/_config.yml` usan `theme: just-the-docs` como gema, sin `remote_theme`.

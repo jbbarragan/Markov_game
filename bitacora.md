@@ -5,15 +5,15 @@ nav_order: 5
 ---
 # Bitácora de tres partidas
 
-**Pendiente de ejecución por el jugador.** No se sustituyen tus observaciones por recorridos automáticos. El laboratorio registra las partidas completas y guarda capturas del tablero con telemetría. Los resúmenes y logs se descargan como JSON; las imágenes se descargan como PNG.
+**Pendiente de ejecución por el jugador.** No se sustituyen tus observaciones por recorridos automáticos. El laboratorio ya no incluye una bitácora interna: la evidencia se reúne con el botón **Capturar pantalla** (imagen PNG del tablero con su telemetría) y se completa aquí.
 
 ### Procedimiento
 1. Selecciona **Práctica**, elige una semilla y pulsa Nueva partida manual.
 2. Juega hasta el turno 100. No reinicies a mitad del episodio.
 3. Repite hasta reunir tres partidas (por ejemplo, semillas 42, 43 y 44).
-4. Descarga las tres capturas automáticas y la bitácora completa.
-5. Contesta las dos preguntas dentro del juego usando lo que realmente ocurrió.
-6. Completa la tabla de abajo y publica las capturas junto con tu conclusión en este archivo del repositorio.
+4. Al terminar cada partida, pulsa Capturar pantalla y conserva la imagen.
+5. Contesta las dos preguntas de abajo usando lo que realmente ocurrió.
+6. Completa la tabla y publica las capturas junto con tu conclusión en este archivo del repositorio.
 
 | Partida | Semilla | Puntaje | G₀ | Latas | Rescates | Evidencia |
 |:--|:--|--:|--:|--:|--:|:--|
@@ -29,7 +29,7 @@ Pendiente de la experiencia del jugador. Conviene señalar posición, energía, 
 Pendiente de la experiencia del jugador. Relaciona el +0.10 seguro con el riesgo de −3, el horizonte restante y la recompensa de una lata.
 
 ### Criterios de análisis
-La distancia Manhattan d = x+y es un mínimo de movimientos para volver sin derrapes. No es una garantía de supervivencia. El consumo promedio alto de 10 por paso y bajo de 16 por paso hace difícil alcanzar latas concentradas en (6,6) y regresar: identifica esa tensión como parte del diseño, sin reducir el gasto a escondidas. Compara el desempeño humano con la referencia analítica de esperar y, después, con evaluaciones de un agente entrenado.
+La distancia Manhattan d = x+y es un mínimo de movimientos para volver sin derrapes. No es una garantía de supervivencia. Con una tasa de 4 %/s la batería dura unos 25 turnos y con 9 %/s apenas 11; a 1 %/s alcanza para toda la partida. Alcanzar latas concentradas en (6,6) y regresar es una tensión de diseño que cambia con el perfil de desgaste: anota qué perfil te tocó en cada partida. Compara el desempeño humano con la referencia analítica de esperar y, después, con evaluaciones de un agente entrenado.
 
 ### Trazabilidad con la práctica
 
@@ -39,7 +39,7 @@ La distancia Manhattan d = x+y es un mínimo de movimientos para volver sin derr
 | 12 latas y normal bivariada | `World.spawn`, reposición inmediata |
 | SH/SL y energía continua | `World.energy`, umbral 40 |
 | Flechas / Espacio / R | Controles del laboratorio |
-| Consumo N(10,4²), N(16,6²) | `World.step`, recorte negativo declarado |
+| Consumo de batería | Función del tiempo (1–9 %/s, constante o intercalada) en `World.step`, `rate_at` e `integrate` |
 | Derrape y colisión | `World.step`, σθ=25° documentada |
 | Recompensas de la tabla | Modo Práctica |
 | Rescate −3 y regreso al inicio | Motor y alerta zZz/X roja |
@@ -47,6 +47,6 @@ La distancia Manhattan d = x+y es un mínimo de movimientos para volver sin derr
 | Tablero izquierdo / telemetría derecha | Interfaz adaptable |
 | Entorno separado de GUI | Python independiente y JavaScript visual |
 | Código Python ejecutable | `core.py`, CLI y Pyodide |
-| 3 partidas, capturas y reflexión | Registro implementado; ejecución humana pendiente |
+| 3 partidas, capturas y reflexión | Captura de pantalla implementada; ejecución humana pendiente |
 | Extensión solicitada de aprendizaje | Q-learning sin experiencia inicial |
 | Página con reporte y juego ampliable | Just the Docs, iframe y Fullscreen API |

@@ -14,18 +14,19 @@ El proceso de decisión se expresa como M = (S, A, P, r, γ), con γ = 0.95 y N 
 
 ```text
 SH: E > 40                    SL: 0 < E ≤ 40
-ΔE = max(0, Z)
-Z | SH ~ N(10, 4²)            Z | SL ~ N(16, 6²)
+ρ(τ) ∈ {1, 2, 4, 6, 9} %/s       tasa de desgaste en el segundo τ
+μ = ∫ ρ(τ) dτ  sobre el paso     descarga media del paso (Δt = 1 s)
+ΔE = max(0, μ(1 + ε)),  ε ~ N(0, 0.10²) recortado a ±0.3
 E' = E − ΔE
-α(E) = Φ((E − 40 − 10) / 4)  para E > 40
-β(E) = Φ((E − 16) / 6)       para 0 < E ≤ 40
+α(E) = Φ((E − 40 − μ) / (0.10 μ))  para E > 40
+β(E) = Φ((E − μ) / (0.10 μ))        para 0 < E ≤ 40
 ```
 
-Φ es la CDF normal estándar. α y β dependen de E, no son constantes. El recorte max(0,Z) evita que una muestra negativa cargue la batería: introduce una masa de probabilidad en cero y se declara como convención física de implementación. Para los umbrales positivos usados arriba, las fórmulas de cruce siguen siendo válidas. En E=40 se usa el régimen bajo.
+Φ es la CDF normal estándar. α y β dependen de E y de la tasa vigente, no son constantes. **La batería se descarga con el tiempo, no con cada movimiento**: esperar, moverse o chocar con el borde consumen lo mismo durante el mismo intervalo. Cada partida usa un perfil de desgaste: constante en 1, 2, 4, 6 o 9 %/s, o *intercalado*, con tramos de 6 a 15 s cuya tasa cambia entre esos valores sin repetir la anterior. En modo *aleatorio* el perfil se sortea con la semilla de la partida. El ruido relativo de 10% mantiene el consumo aproximadamente lineal en el tiempo. El recorte max(0,·) evita cargar la batería con una muestra negativa y se declara como convención de implementación. En E=40 se usa el régimen bajo.
 
-Si E'≤0, el rescate asigna recompensa −3, incrementa el contador y retorna a (0,0,100%). Se evalúa el agotamiento **antes de otorgar la recompensa de una lata**. Una colisión gasta energía aunque no cambie la posición. Esperar no gasta energía en Práctica. Recargar no avanza la posición ni otorga puntos.
+Si E'≤0, el rescate asigna recompensa −3, incrementa el contador y retorna a (0,0,100%). Se evalúa el agotamiento **antes de otorgar la recompensa de una lata**. Una colisión no gasta energía adicional: solo corre el tiempo. Esperar también desgasta la batería. Recargar es instantáneo, no avanza la posición ni otorga puntos y nunca provoca un rescate en ese paso.
 
-En Extendida: E' = E − ΔE_movimiento − 0.5Δt. El reloj usa segundos **activos de simulación**, no tiempo de pared durante pausa, pestaña oculta, carga de Python o alerta de rescate. Cada paso dura Δt=1 s tanto en modo manual como automático y en entrenamiento acelerado. La animación puede acelerarse sin alterar el modelo. Al no elegir una acción, se ejecuta esperar. Recargar toma un turno y restablece a 100% si no hubo agotamiento previo en ese paso.
+En Extendida la fórmula es la misma, con Δt segundos activos por paso: μ = ∫ ρ(τ) dτ sobre ese intervalo. El reloj usa segundos **activos de simulación**, no tiempo de pared durante pausa, pestaña oculta, carga de Python o alerta de rescate. Cada paso dura Δt=1 s tanto en modo manual como automático y en entrenamiento acelerado. La animación puede acelerarse sin alterar el modelo. Al no elegir una acción, se ejecuta esperar. Recargar toma un turno y restablece a 100%.
 
 ### 3. Derrape
 
@@ -58,4 +59,4 @@ Puntaje = Σ[t=0..99] rₜ
 G₀ = Σ[t=0..99] γᵗ rₜ,     γ = 0.95
 ```
 
-Se cuentan exactamente 100 recompensas. La etiqueta G₀ indica el retorno descontado acumulado desde el inicio, no el retorno futuro de un estado intermedio. Permanecer esperando los 100 turnos produce puntaje 10 y G₀ = 0.1(1−0.95¹⁰⁰)/(1−0.95) ≈ 1.98816. Es una referencia analítica, **no una partida humana registrada ni una prueba de optimalidad**.
+Se cuentan exactamente 100 recompensas. La etiqueta G₀ indica el retorno descontado acumulado desde el inicio, no el retorno futuro de un estado intermedio. Esperar 100 turnos *sin agotar la batería* (solo posible si se recarga en la base a tiempo) produciría puntaje 10 y G₀ = 0.1(1−0.95¹⁰⁰)/(1−0.95) ≈ 1.98816; con el desgaste por tiempo, esperar sin recargar termina en rescates. Es una referencia analítica, **no una partida humana registrada ni una prueba de optimalidad**.

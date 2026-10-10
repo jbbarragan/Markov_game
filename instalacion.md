@@ -30,7 +30,7 @@ No reemplaces su workflow de Pages por este: un repositorio tiene un sitio princ
 
 ```bash
 python -m unittest discover -s tests -v
-python docs/game/core.py --episodes 1000 --mode practice --output training.json
+python docs/game/core.py --episodes 1000 --mode practice --drain random --output training.json --telemetry-csv telemetria.csv --balance-csv balance.csv
 ```
 
-El entrenamiento por consola no abre una ventana; produce resultados JSON. `run_local.py` abre el reporte y su interfaz web.
+El entrenamiento por consola no abre una ventana; produce resultados JSON y, si se piden, los CSV de telemetría y balance de recompensas. `run_local.py` abre el reporte y su interfaz web.

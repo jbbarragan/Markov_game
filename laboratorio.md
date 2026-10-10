@@ -14,6 +14,6 @@ El botón **Pantalla completa** está dentro del juego. Al volver al reporte se 
 <iframe class="cf-game" src="{{ '/game/index.html' | relative_url }}" title="Can Finder 5000, simulador MDP y aprendizaje en Python" allow="fullscreen" allowfullscreen loading="eager"></iframe>
 
 ### Lectura de las métricas
-La energía y su estado SH/SL determinan la distribución de consumo del siguiente movimiento. La línea vertical amarilla en la curva gaussiana marca el último ángulo; las líneas de umbral están en ±30°. α(E) y β(E) corresponden al consumo gaussiano por movimiento. En Extendida la descarga temporal se añade aparte.
+La batería se descarga con el tiempo a una tasa de 1, 2, 4, 6 o 9 % por segundo, constante o intercalada; el selector **Desgaste de batería** fija el perfil o lo sortea por partida. La gráfica de batería contra tiempo muestra cómo baja y el umbral SH/SL del 40%. α(E) y β(E) dependen de la tasa vigente. La línea vertical roja en la curva gaussiana marca el último ángulo; las líneas de umbral están en ±30°. Debajo del tablero, el balance de recompensas separa lo ganado o perdido por latas, movimiento, espera y rescates.
 
-La bitácora y las reflexiones se encuentran debajo de la curva de entrenamiento, dentro del juego. Descarga sus archivos antes de borrar datos del navegador. Las capturas automáticas se generan al completar una partida manual.
+Cuando Python controla el robot (aprender o evaluar) aparece la sección **Datos del agente** con la descarga de telemetría, balance de recompensas y tabla Q. En modo manual no hay bitácora ni descargas; el botón **Capturar pantalla** guarda una imagen del tablero con su telemetría.
