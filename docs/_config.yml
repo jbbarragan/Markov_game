@@ -1,8 +1,9 @@
 title: Can Finder 5000
 description: Práctica 5 · Procesos de decisión de Markov
-remote_theme: just-the-docs/just-the-docs@v0.10.1
+theme: just-the-docs
 plugins:
-  - jekyll-remote-theme
+  - jekyll-include-cache
+  - jekyll-seo-tag
 color_scheme: light
 search_enabled: true
 heading_anchors: true
