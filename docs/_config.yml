@@ -1,0 +1,13 @@
+title: Can Finder 5000
+description: Práctica 5 · Procesos de decisión de Markov
+remote_theme: just-the-docs/just-the-docs@v0.10.1
+plugins:
+  - jekyll-remote-theme
+color_scheme: light
+search_enabled: true
+heading_anchors: true
+permalink: pretty
+footer_content: 'Joshua Abdiel Barragán Guardado · Universidad Iberoamericana CDMX · Práctica 5'
+exclude:
+  - Gemfile
+  - Gemfile.lock

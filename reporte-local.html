@@ -1,0 +1,214 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Can Finder 5000 · Reporte</title><style>*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fafaf7;color:#273b40;font:16px/1.75 system-ui,sans-serif}nav{position:fixed;width:245px;height:100vh;background:#eeefe8;padding:35px 25px;border-right:1px solid #d5dbd2}nav strong{font:700 22px monospace;display:block;margin:20px 0 35px}nav a{display:block;font-size:14px;text-decoration:none;margin:14px 0;color:inherit}main{margin-left:245px;max-width:1180px;padding:40px 55px}section{padding:5px 0 45px;border-bottom:1px solid #d3dcd6;scroll-margin-top:20px}h1{font-size:42px;line-height:1.2;letter-spacing:-1.5px;margin-bottom:18px}h2{font-size:26px;line-height:1.35;margin:25px 0 18px}h3{font-size:20px;margin-top:32px}a{color:#1c786f}pre{padding:20px;background:#eaf0ea;overflow:auto;font-size:13px;border-radius:6px}code{font-size:13px}table{border-collapse:collapse;width:100%;font-size:14px}td{border:1px solid #ccd7d0;padding:10px 12px;vertical-align:top}tr:first-child{font-weight:700;background:#e6eee6}.table-wrap{overflow:auto}.cf-kicker{font:12px monospace;letter-spacing:2px;color:#687d6c}.cf-hero{padding:25px;border:1px solid #b9c8bc;border-left:5px solid #bd9139;background:linear-gradient(120deg,#f1eddd,#dfebe2);margin:30px 0;border-radius:7px}.cf-tags{font:12px monospace;color:#516b5b}.cf-game{width:100%;height:1600px;border:0;border-radius:8px}.badge{font:12px monospace;color:#98742b}button{border:1px solid #86958a;background:transparent;padding:10px 14px;border-radius:5px;color:inherit;cursor:pointer}body.dark{background:#152129;color:#e1e7df}body.dark nav{background:#1c2b33;border-color:#43555a}body.dark a{color:#8fd0b8}body.dark pre,body.dark tr:first-child{background:#243840}body.dark .cf-hero{background:#293d3c}body.dark td{border-color:#516263}body.dark .cf-tags,body.dark .cf-kicker{color:#b1c4b4}@media(max-width:850px){nav{position:static;width:100%;height:auto;padding:15px 22px}nav strong{margin:5px 0}nav a{display:inline-block;margin:5px 12px 5px 0}main{margin:0;padding:25px 20px}h1{font-size:34px}}@media print{nav,iframe,button{display:none!important}main{margin:0;padding:0;max-width:none}body{font-size:11px}section{break-before:page}section:first-child{break-before:auto}pre,table,.cf-hero{break-inside:avoid}}</style></head><body><nav><span class="badge">IBERO / PRÁCTICA 05</span><strong>CAN FINDER<br>5000</strong><a href="#index">01 &nbsp; Reporte</a><a href="#modelo">02 &nbsp; Modelo matemático</a><a href="#aprendizaje">03 &nbsp; Aprendizaje en Python</a><a href="#laboratorio">04 &nbsp; Laboratorio</a><a href="#bitacora">05 &nbsp; Bitácora</a><a href="#instalacion">06 &nbsp; Publicación</a><button id="theme">☀ / ☾ Cambiar tema</button></nav><main><section id="index"><div class="cf-kicker">IBERO CDMX / APRENDIZAJE REFORZADO / PRÁCTICA 05</div>
+<h1>Can Finder 5000</h1>
+<h2>Un robot, cien decisiones y una batería finita</h2>
+<p><strong>Joshua Abdiel Barragán Guardado</strong>  </p>
+<p>Ingeniería Mecatrónica y Sistemas Ciberfísicos · Universidad Iberoamericana Ciudad de México  </p>
+<p>Docentes: Dr. Alexandro López González y Mtro. Julio A. Caballero Mora</p>
+<div class="cf-hero"><span class="cf-kicker">SIMULACIÓN INTERACTIVA DE UN MDP</span><h2>Reciclar bajo incertidumbre.</h2><p>Un pequeño robot de orugas explora un mundo de 10 × 10 celdas. Cada desplazamiento puede cambiar de dirección, cada búsqueda consume energía y cada decisión tiene una recompensa.</p><div class="cf-tags">16 BITS &nbsp; / &nbsp; PYTHON + JAVASCRIPT &nbsp; / &nbsp; Q-LEARNING</div></div>
+<p><a href="#laboratorio">Abrir el laboratorio</a></p>
+<p><a href="#modelo">Consultar el modelo</a></p>
+<h3>Resumen</h3>
+<p>Se implementa un entorno de recolección basado en procesos de decisión de Markov. El jugador controla un robot mediante el teclado y observa transiciones estocásticas de movimiento y energía. El sistema mide recompensa acumulada, retorno descontado, recolecciones y rescates durante episodios de 100 turnos. Como extensión, se incorpora un agente de Q-learning escrito en Python, inicializado sin experiencia, y una modalidad con recompensas por color y descarga dependiente del tiempo.</p>
+<p>El sitio presenta el reporte y permite experimentar dentro de la misma página. Python ejecuta el entorno y el agente en un trabajador del navegador mediante Pyodide; JavaScript dibuja el tablero, captura los controles y muestra las métricas. La separación permite reutilizar el mismo entorno en experimentos fuera del navegador.</p>
+<h3>1. Objetivo</h3>
+<p>Experimentar el compromiso entre recolectar recompensas, preservar energía y evitar rescates; identificar estados, acciones, recompensas y transiciones; observar la diferencia entre una política humana y una política que aprende de su interacción.</p>
+<h3>2. Alcance y modalidades</h3>
+<div class="table-wrap"><table><tbody>
+<tr><td>Característica</td><td>Práctica</td><td>Extendida</td></tr>
+<tr><td>Tablero / base / horizonte</td><td>10 × 10 / (0,0) / 100 turnos</td><td>Iguales</td></tr>
+<tr><td>Latas iniciales</td><td>12</td><td>12</td></tr>
+<tr><td>Reposición tras recolectar</td><td>Inmediata, mantiene 12</td><td>Inmediata</td></tr>
+<tr><td>Aparición adicional</td><td>No</td><td>Probabilidad 1−exp(−Δt/8), máximo 20</td></tr>
+<tr><td>Premio por lata</td><td>+1 en todos los colores</td><td>Verde +1, azul +2, rosa +4</td></tr>
+<tr><td>Casilla vacía / rescate</td><td>−0.05 / −3</td><td>Iguales</td></tr>
+<tr><td>Esperar</td><td>+0.10, sin consumo</td><td>0, con descarga temporal</td></tr>
+<tr><td>Descarga temporal</td><td>Solo por desplazamiento</td><td>Gaussiana de movimiento + 0.5% por segundo activo</td></tr>
+<tr><td>Avance manual</td><td>Una tecla válida, un turno</td><td>Un turno por segundo activo</td></tr>
+<tr><td>Recarga</td><td>R sobre la base: 100%</td><td>Igual</td></tr>
+</tbody></table></div>
+<p>La modalidad Práctica conserva las reglas evaluables. La modalidad Extendida satisface el diseño adicional del videojuego y debe analizarse por separado. El PDF propone Python o MATLAB: aquí la lógica completa es Python y la interfaz web es una adaptación de presentación, no una implementación en Pygame/Tkinter. Se incluye además ejecución de entrenamiento con Python estándar.</p>
+<h3>3. Diseño del sistema</h3>
+<p>El mapa usa sprites originales dibujados por código: robot amarillo con orugas y ojos binoculares inspirado en WALL·E, latas de tres colores, estación cian y terreno cuadriculado. El lenguaje visual evoca videojuegos de 16 bits, con píxeles nítidos y paleta limitada; no requiere imágenes externas.</p>
+<p>El panel derecho muestra energía, SH/SL, ΔE, ángulo de derrape, curva gaussiana, probabilidades condicionadas a la carga, turno, latas, rescates, puntaje y G₀. El agotamiento presenta una alerta con zZz y X roja durante aproximadamente 850 ms, antes de mostrar el robot de nuevo en la base.</p>
+<h3>4. Resultados y estado de la evidencia</h3>
+<p>Este reporte describe una implementación y un protocolo reproducible. <strong>No se presentan partidas humanas ni mejoras del agente como resultados ya observados.</strong> La bitácora registra tus partidas completas, captura su tablero y telemetría, y admite las dos reflexiones solicitadas. El entrenamiento produce una curva real en cada ejecución y permite descargar sus métricas y tabla Q.</p>
+<p>Una recompensa positiva por esperar puede favorecer la inactividad; por tanto, aprender no implica necesariamente recolectar más. Deben compararse puntaje, retorno, latas y rescates conjuntamente. El aprendizaje tabular con estado agregado tampoco garantiza convergencia a la política óptima del entorno completo.</p>
+<h3>5. Conclusión de diseño</h3>
+<p>La simulación vuelve visibles los componentes de una decisión secuencial bajo incertidumbre. Regresar a la base tiene un costo y también un riesgo: con batería baja el consumo aumenta y el derrape dificulta alcanzar la estación. La extensión de aprendizaje permite investigar cómo esas reglas producen estrategias, incluyendo comportamientos poco intuitivos como esperar. La conclusión experimental final se completa después de las tres partidas reales.</p>
+<h3>Referencias</h3>
+<ul>
+<li>López González, A. y Caballero Mora, J. A. *Práctica: El Juego del “Can Finder 5000” en un Gridworld Estocástico*. Material de clase proporcionado, 5 páginas.</li>
+<li><a href="https://pyodide.org/en/0.27.2/usage/index.html">Pyodide: uso de Python en el navegador</a>. Versión fijada: 0.27.2.</li>
+<li><a href="https://just-the-docs.com/">Just the Docs</a>. Tema de documentación para Jekyll.</li>
+<li><a href="https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages">GitHub Pages: publicación mediante GitHub Actions</a>.</li>
+</ul></section><section id="modelo"><h1>Modelo matemático</h1>
+<h3>1. Formulación</h3>
+<p>El proceso de decisión se expresa como M = (S, A, P, r, γ), con γ = 0.95 y N = 100. El estado visible propuesto en la guía es sₜ = (xₜ, yₜ, bₜ), con x,y ∈ {0,…,9} y b ∈ {SH,SL}. Son 200 combinaciones visibles. Las acciones son norte, este, sur, oeste, esperar y recargar; recargar solo se habilita en (0,0).</p>
+<p><strong>Precisión de modelado:</strong> ese estado visible no es suficiente para un MDP exacto. Dos cargas de 41% y 99%, ambas SH, tienen diferentes probabilidades de cruzar el umbral. Además, recoger depende del mapa actual. Un estado suficiente del simulador es (x,y,E,C,t), donde C contiene posiciones y colores de todas las latas y t incorpora el horizonte. La energía continua hace que este modelo ampliado no sea estrictamente un MDP finito. La interfaz conserva los estados de la guía; el aprendizaje usa una discretización aproximada, sin afirmar equivalencia exacta.</p>
+<h3>2. Energía y probabilidades</h3>
+<pre><code>
+SH: E &gt; 40                    SL: 0 &lt; E ≤ 40
+
+ΔE = max(0, Z)
+
+Z | SH ~ N(10, 4²)            Z | SL ~ N(16, 6²)
+
+E&#x27; = E − ΔE
+
+α(E) = Φ((E − 40 − 10) / 4)  para E &gt; 40
+
+β(E) = Φ((E − 16) / 6)       para 0 &lt; E ≤ 40
+
+</code></pre>
+<p>Φ es la CDF normal estándar. α y β dependen de E, no son constantes. El recorte max(0,Z) evita que una muestra negativa cargue la batería: introduce una masa de probabilidad en cero y se declara como convención física de implementación. Para los umbrales positivos usados arriba, las fórmulas de cruce siguen siendo válidas. En E=40 se usa el régimen bajo.</p>
+<p>Si E'≤0, el rescate asigna recompensa −3, incrementa el contador y retorna a (0,0,100%). Se evalúa el agotamiento <strong>antes de otorgar la recompensa de una lata</strong>. Una colisión gasta energía aunque no cambie la posición. Esperar no gasta energía en Práctica. Recargar no avanza la posición ni otorga puntos.</p>
+<p>En Extendida: E' = E − ΔE_movimiento − 0.5Δt. El reloj usa segundos <strong>activos de simulación</strong>, no tiempo de pared durante pausa, pestaña oculta, carga de Python o alerta de rescate. Cada paso dura Δt=1 s tanto en modo manual como automático y en entrenamiento acelerado. La animación puede acelerarse sin alterar el modelo. Al no elegir una acción, se ejecuta esperar. Recargar toma un turno y restablece a 100% si no hubo agotamiento previo en ese paso.</p>
+<h3>3. Derrape</h3>
+<pre><code>
+θ ~ N(0, 25²), en grados
+
+|θ| ≤ 30       dirección solicitada
+
+θ &gt; 30         dirección perpendicular derecha
+
+θ &lt; −30        dirección perpendicular izquierda
+
+</code></pre>
+<p>Con σ=25°, P(éxito)=2Φ(1.2)−1≈0.76986 y cada desvío tiene probabilidad ≈0.11507. Se interpreta <strong>25° como desviación estándar</strong>, consistente con el 77% que menciona la guía. Leer literalmente su varianza como 25 grados² daría σ=5° y una probabilidad muy distinta. En el arreglo norte→este→sur→oeste, derecha suma uno e izquierda resta uno módulo cuatro. Coordenada y crece hacia abajo en pantalla.</p>
+<h3>4. Generación de latas</h3>
+<p>Se generan X,Y independientes con N(6,2²), equivalente a media (6,6) y covarianza diag(4,4). Se redondea a la celda más cercana y se rechaza toda muestra fuera de [0,9]², ocupada por otra lata, por el robot o por la base. La distribución final es, por tanto, una normal discretizada condicionada a celdas admisibles; no una normal continua sin modificar. Cada color tiene probabilidad 1/3.</p>
+<p>En Práctica cada recolección repone inmediatamente la lata para mantener 12. En Extendida hay además una prueba de aparición por turno con p=1−exp(−Δt/8), limitada a una lata adicional por turno y 20 activas. Esta es una aproximación Bernoulli al evento de al menos una llegada de un proceso Poisson, no un muestreo completo del número de llegadas.</p>
+<h3>5. Recompensa y retorno</h3>
+<div class="table-wrap"><table><tbody>
+<tr><td>Evento</td><td>r en Práctica</td></tr>
+<tr><td>Buscar y recolectar sin agotarse</td><td>+1.00</td></tr>
+<tr><td>Buscar sin recolectar</td><td>−0.05</td></tr>
+<tr><td>Esperar</td><td>+0.10</td></tr>
+<tr><td>Recargar en base</td><td>0.00</td></tr>
+<tr><td>Agotamiento y rescate</td><td>−3.00</td></tr>
+</tbody></table></div>
+<pre><code>
+Puntaje = Σ[t=0..99] rₜ
+
+G₀ = Σ[t=0..99] γᵗ rₜ,     γ = 0.95
+
+</code></pre>
+<p>Se cuentan exactamente 100 recompensas. La etiqueta G₀ indica el retorno descontado acumulado desde el inicio, no el retorno futuro de un estado intermedio. Permanecer esperando los 100 turnos produce puntaje 10 y G₀ = 0.1(1−0.95¹⁰⁰)/(1−0.95) ≈ 1.98816. Es una referencia analítica, <strong>no una partida humana registrada ni una prueba de optimalidad</strong>.</p></section><section id="aprendizaje"><h1>Aprendizaje por refuerzo</h1>
+<h3>De una cadena de Markov a una política</h3>
+<p>Una cadena de Markov describe transiciones; un MDP añade acciones y recompensas. Al fijar una política π se induce una dinámica de Markov sobre un estado suficiente. Aquí se utiliza <strong>Q-learning</strong>, aprendizaje por refuerzo sin modelo: el agente desconoce las probabilidades de transición y aprende valores de acción con las recompensas observadas. No se calcula una ruta óptima mediante una regla preprogramada de regreso a la base.</p>
+<h3>Representación del agente</h3>
+<p>La clave tabular es (x, y, ⌊E/10⌋ limitado a 9, Δx_lata, Δy_lata, color_lata, bloque_de_turnos_restantes). La lata objetivo es la más cercana según distancia Manhattan, con desempate lexicográfico; esto es extracción de características, no una orden de movimiento. Incluir posición absoluta permite distinguir la base y las fronteras. La carga se divide en diez intervalos y el tiempo en bloques de diez turnos.</p>
+<p>Esta agregación omite las demás latas y agrupa distintas cargas y tiempos; puede asociar situaciones diferentes a una misma entrada Q. Es una aproximación del estado, con aliasing y sin garantía de convergencia al óptimo del modelo completo. Una codificación exacta del mapa completo aumentaría drásticamente el número de estados y reduciría la repetición útil de experiencias.</p>
+<h3>Actualización</h3>
+<pre><code>
+Q(s,a) ← Q(s,a) + η [r + γ maxₐ&#x27; Q(s&#x27;,a&#x27;) − Q(s,a)]
+
+η = 0.15; γ = 0.95; Q inicial = 0
+
+En el turno terminal: objetivo = r (sin bootstrap).
+
+ε(k) = max(0.05, 0.995ᵏ), k = episodios completos entrenados.
+
+</code></pre>
+<p>Con probabilidad ε se explora una acción válida uniforme; en otro caso se elige el mayor valor Q, desempatando al azar. La acción recargar se enmascara fuera de la base. El agente recibe los resultados numéricos del entorno: no se carga una tabla de premios dentro de la política.</p>
+<h3>Controles experimentales</h3>
+<ul>
+<li><strong>Aprender desde cero:</strong> borra Q, métricas y episodios; inicia en base con 100% y empieza a explorar.</li>
+<li><strong>Entrenar +500 episodios:</strong> acelera el mismo entorno en bloques pequeños dentro del worker. Continúa la Q actual, no la reinicia. Pausar detiene al terminar el bloque actual.</li>
+<li><strong>Evaluar sin explorar:</strong> ε efectiva 0, no actualiza Q ni contadores de entrenamiento. Se detiene al terminar 100 turnos. Los empates siguen siendo aleatorios.</li>
+<li><strong>Nueva partida manual:</strong> recupera las flechas; conserva Q en la misma modalidad. Cambiar modalidad reinicia el agente para no mezclar recompensas distintas.</li>
+<li><strong>Exportar datos JSON:</strong> contiene el registro por turno de la partida visible, todos los resúmenes entrenados y la tabla Q. No se persiste automáticamente Q al cerrar; sí se conserva la bitácora manual cuando el navegador lo permite.</li>
+</ul>
+<h3>Qué observar</h3>
+<p>Comparar los primeros episodios con los últimos mediante medias por ventanas, no mediante una sola partida. Usar semillas nuevas para evaluar generalización y repetir el entrenamiento con varias semillas. Medir puntaje, G₀, latas y rescates. El programa no promete que 500 episodios basten; su espacio agregado sigue siendo grande.</p>
+<p>En Práctica, la recompensa por esperar favorece una política conservadora. En Extendida se anula ese premio y se cobra energía por tiempo: esta modificación cambia el objetivo y evita que esperar sea una fuente gratuita de puntos, pero no garantiza que el agente aprenda una buena política de retorno.</p>
+<h3>Archivos principales</h3>
+<div class="table-wrap"><table><tbody>
+<tr><td>Archivo</td><td>Responsabilidad</td></tr>
+<tr><td><code>docs/game/core.py</code></td><td>Entorno, RNG, transiciones, Q-learning y entrenamiento CLI</td></tr>
+<tr><td><code>docs/game/worker.js</code></td><td>Carga Pyodide y comunica Python con JavaScript</td></tr>
+<tr><td><code>docs/game/game.js</code></td><td>Sprites Canvas, teclado, reloj, gráficas, evidencia</td></tr>
+<tr><td><code>docs/game/game.css</code></td><td>Presentación adaptable y estilo del laboratorio</td></tr>
+<tr><td><code>tests/test_core.py</code></td><td>Reglas, fronteras, rescates y actualización terminal</td></tr>
+</tbody></table></div>
+<p>Para entrenar sin navegador ni bibliotecas externas:</p>
+<pre><code>
+python docs/game/core.py --episodes 1000 --mode practice --output training.json
+
+</code></pre>
+<p>Este comando genera datos de entrenamiento; la interfaz gráfica se abre con <code>python run_local.py</code>. Pyodide 0.27.2 se descarga desde jsDelivr y requiere conexión. GitHub Pages entrega archivos estáticos; no se intenta ejecutar un servidor Python remoto.</p></section><section id="laboratorio"><h1>Laboratorio interactivo</h1>
+<p>Elige <strong>Práctica</strong> para las tres partidas evaluables. Haz clic en el tablero y usa las flechas, Espacio y R. Las acciones manuales quedan bloqueadas cuando Python controla el robot. En pantallas pequeñas puedes usar los botones táctiles.</p>
+<p><a href="docs/game/index.html">Abrir juego en una pestaña</a></p>
+<p>El botón <strong>Pantalla completa</strong> está dentro del juego. Al volver al reporte se conserva la sesión mientras no se recargue la página. La primera carga de Python puede tardar y requiere internet.</p>
+<iframe class="cf-game" src="docs/game/index.html" title="Can Finder 5000, simulador MDP y aprendizaje en Python" allow="fullscreen" allowfullscreen loading="eager"></iframe>
+<h3>Lectura de las métricas</h3>
+<p>La energía y su estado SH/SL determinan la distribución de consumo del siguiente movimiento. La línea vertical amarilla en la curva gaussiana marca el último ángulo; las líneas de umbral están en ±30°. α(E) y β(E) corresponden al consumo gaussiano por movimiento. En Extendida la descarga temporal se añade aparte.</p>
+<p>La bitácora y las reflexiones se encuentran debajo de la curva de entrenamiento, dentro del juego. Descarga sus archivos antes de borrar datos del navegador. Las capturas automáticas se generan al completar una partida manual.</p></section><section id="bitacora"><h1>Bitácora de tres partidas</h1>
+<p><strong>Pendiente de ejecución por el jugador.</strong> No se sustituyen tus observaciones por recorridos automáticos. El laboratorio registra las partidas completas y guarda capturas del tablero con telemetría. Los resúmenes y logs se descargan como JSON; las imágenes se descargan como PNG.</p>
+<h3>Procedimiento</h3>
+<ul>
+<li>Selecciona <strong>Práctica</strong>, elige una semilla y pulsa Nueva partida manual.</li>
+<li>Juega hasta el turno 100. No reinicies a mitad del episodio.</li>
+<li>Repite hasta reunir tres partidas (por ejemplo, semillas 42, 43 y 44).</li>
+<li>Descarga las tres capturas automáticas y la bitácora completa.</li>
+<li>Contesta las dos preguntas dentro del juego usando lo que realmente ocurrió.</li>
+<li>Completa la tabla de abajo y publica las capturas junto con tu conclusión en este archivo del repositorio.</li>
+</ul>
+<div class="table-wrap"><table><tbody>
+<tr><td>Partida</td><td>Semilla</td><td>Puntaje</td><td>G₀</td><td>Latas</td><td>Rescates</td><td>Evidencia</td></tr>
+<tr><td>1</td><td>Pendiente</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Pendiente</td></tr>
+<tr><td>2</td><td>Pendiente</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Pendiente</td></tr>
+<tr><td>3</td><td>Pendiente</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Pendiente</td></tr>
+</tbody></table></div>
+<h3>Reflexión solicitada</h3>
+<p><strong>¿Cuál fue tu política humana π(s) cuando el robot entraba en batería baja lejos de la base?</strong>  </p>
+<p>Pendiente de la experiencia del jugador. Conviene señalar posición, energía, distancia a la base y decisión concreta. No basta con indicar “regresar”: el derrape puede impedirlo y el presupuesto de energía suele ser menor que esa distancia.</p>
+<p><strong>¿En qué situaciones preferiste esperar en vez de arriesgarte a buscar una lata o regresar?</strong>  </p>
+<p>Pendiente de la experiencia del jugador. Relaciona el +0.10 seguro con el riesgo de −3, el horizonte restante y la recompensa de una lata.</p>
+<h3>Criterios de análisis</h3>
+<p>La distancia Manhattan d = x+y es un mínimo de movimientos para volver sin derrapes. No es una garantía de supervivencia. El consumo promedio alto de 10 por paso y bajo de 16 por paso hace difícil alcanzar latas concentradas en (6,6) y regresar: identifica esa tensión como parte del diseño, sin reducir el gasto a escondidas. Compara el desempeño humano con la referencia analítica de esperar y, después, con evaluaciones de un agente entrenado.</p>
+<h3>Trazabilidad con la práctica</h3>
+<div class="table-wrap"><table><tbody>
+<tr><td>Requisito</td><td>Implementación / evidencia</td></tr>
+<tr><td>Cuadrícula 10 × 10 y base (0,0)</td><td><code>World</code>, Canvas</td></tr>
+<tr><td>12 latas y normal bivariada</td><td><code>World.spawn</code>, reposición inmediata</td></tr>
+<tr><td>SH/SL y energía continua</td><td><code>World.energy</code>, umbral 40</td></tr>
+<tr><td>Flechas / Espacio / R</td><td>Controles del laboratorio</td></tr>
+<tr><td>Consumo N(10,4²), N(16,6²)</td><td><code>World.step</code>, recorte negativo declarado</td></tr>
+<tr><td>Derrape y colisión</td><td><code>World.step</code>, σθ=25° documentada</td></tr>
+<tr><td>Recompensas de la tabla</td><td>Modo Práctica</td></tr>
+<tr><td>Rescate −3 y regreso al inicio</td><td>Motor y alerta zZz/X roja</td></tr>
+<tr><td>100 turnos y γ=0.95</td><td>Motor, panel y exportación</td></tr>
+<tr><td>Tablero izquierdo / telemetría derecha</td><td>Interfaz adaptable</td></tr>
+<tr><td>Entorno separado de GUI</td><td>Python independiente y JavaScript visual</td></tr>
+<tr><td>Código Python ejecutable</td><td><code>core.py</code>, CLI y Pyodide</td></tr>
+<tr><td>3 partidas, capturas y reflexión</td><td>Registro implementado; ejecución humana pendiente</td></tr>
+<tr><td>Extensión solicitada de aprendizaje</td><td>Q-learning sin experiencia inicial</td></tr>
+<tr><td>Página con reporte y juego ampliable</td><td>Just the Docs, iframe y Fullscreen API</td></tr>
+</tbody></table></div></section><section id="instalacion"><h1>Ejecutar y publicar</h1>
+<h3>En tu computadora</h3>
+<p>Descomprime el proyecto. En una terminal dentro de la carpeta ejecuta:</p>
+<pre><code>
+python run_local.py
+
+</code></pre>
+<p>Se abre un reporte local con el juego integrado. No necesitas Node ni instalar paquetes Python. <strong>Sí necesitas internet para descargar Pyodide la primera vez</strong> (no se ofrece funcionamiento offline garantizado). No abras <code>game/index.html</code> con doble clic: los workers y la lectura de Python necesitan HTTP/HTTPS. Para cerrar el servidor pulsa Ctrl+C.</p>
+<h3>En un repositorio nuevo de GitHub</h3>
+<ul>
+<li>Crea un repositorio para esta práctica, por ejemplo <code>can-finder-5000</code>.</li>
+<li>Sube <strong>el contenido de la carpeta extraída a la raíz</strong>, incluyendo <code>.github</code>, <code>docs</code>, <code>tests</code>, <code>README.md</code> y <code>run_local.py</code>. La estructura no debe quedar dentro de otra carpeta <code>can-finder-5000</code> en el repo.</li>
+<li>En <strong>Settings → Pages → Build and deployment → Source</strong>, selecciona <strong>GitHub Actions</strong>.</li>
+<li>Haz push a <code>main</code>. El flujo <code>Publicar reporte y juego</code> prueba el motor, construye Just the Docs y publica el sitio.</li>
+<li>Abre la URL que muestra la ejecución de Actions, normalmente <code>https://TU_USUARIO.github.io/can-finder-5000/</code>.</li>
+</ul>
+<p>La ruta base se obtiene automáticamente de Pages: no es necesario escribir el nombre del repositorio en el código. Las rutas del juego son relativas y funcionan dentro de un subdirectorio.</p>
+<h3>Si lo integras al repositorio de Control Avanzado</h3>
+<p>No reemplaces su workflow de Pages por este: un repositorio tiene un sitio principal. Copia <code>docs/game/</code> al directorio fuente de ese sitio e incorpora las páginas del reporte a su navegación. Ajusta el iframe mediante <code>relative_url</code> y conserva el workflow ya existente. El ZIP es autónomo para un repositorio nuevo; esta integración requiere conocer la estructura concreta del repo anterior.</p>
+<h3>Verificación local del motor</h3>
+<pre><code>
+python -m unittest discover -s tests -v
+
+python docs/game/core.py --episodes 1000 --mode practice --output training.json
+
+</code></pre>
+<p>El entrenamiento por consola no abre una ventana; produce resultados JSON. <code>run_local.py</code> abre el reporte y su interfaz web.</p></section></main><script>document.getElementById('theme').onclick=()=>{document.body.classList.toggle('dark');document.querySelectorAll('iframe').forEach(f=>f.contentWindow.postMessage({theme:document.body.classList.contains('dark')?'dark':'light'},location.origin));};</script></body></html>
