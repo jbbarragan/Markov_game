@@ -4,7 +4,7 @@ import json
 import sys
 import unittest
 from pathlib import Path
-sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'docs'/'game'))
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'docs'/'game-v5'))
 import core
 from core import World,Learner,RATES
 
@@ -85,7 +85,7 @@ class TestTimeDrain(unittest.TestCase):
         self.assertAlmostEqual(w.integrate(0,10)+w.integrate(10,57.5),w.integrate(0,57.5))
         self.assertAlmostEqual(w.integrate(0,1),w.rate_at(0))
     def test_random_profile_varies_between_games_and_is_seeded(self):
-        profiles={World(seed=s).profile for s in range(60)}
+        profiles={World(seed=s,drain='random').profile for s in range(60)}
         self.assertGreaterEqual(len(profiles),5)
         self.assertEqual(World(seed=7).profile,World(seed=7).profile)
     def test_forced_option_wins_over_random(self):
@@ -164,5 +164,31 @@ class TestIndependentClock(unittest.TestCase):
         for _ in range(100):a.advance(w)
         self.assertAlmostEqual(w.elapsed,20)
         self.assertAlmostEqual(w.energy,80)
+
+
+
+class TestV5ControlsAndDefaults(unittest.TestCase):
+    def test_initial_rate_is_one_percent_per_second(self):
+        w=World();self.assertEqual(w.rate_at(0),1)
+        w.step(None,10,record=False)
+        self.assertAlmostEqual(w.energy,90)
+    def test_long_rate_has_two_hundred_second_autonomy(self):
+        w=World(drain='0.5');self.assertEqual(w.autonomy(),200)
+        w.step(None,60,record=False);self.assertEqual(w.energy,70)
+    def test_no_slip_follows_direction_and_recharges(self):
+        w=World(slip=False)
+        for _ in range(6):w.step(1,0,record=False)
+        for _ in range(6):w.step(2,0,record=False)
+        self.assertEqual((w.x,w.y,w.energy),(6,6,100))
+        for _ in range(6):w.step(3,0,record=False)
+        for _ in range(6):w.step(0,0,record=False)
+        w.energy=20;w.step(5,0,record=False)
+        self.assertEqual((w.x,w.y,w.energy),(0,0,100))
+        self.assertEqual(w.log,[])
+    def test_training_keeps_selected_dynamics(self):
+        core.dispatch(json.dumps(dict(op='reset',slip=False,drain='0.5',fresh=True)))
+        result=json.loads(core.dispatch(json.dumps(dict(op='train',count=1))))
+        self.assertFalse(result['state']['slip'])
+        self.assertEqual(result['state']['rate'],.5)
 
 if __name__=='__main__': unittest.main()

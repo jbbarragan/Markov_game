@@ -70,3 +70,10 @@ small{color:var(--muted);font:17px/1.15 var(--body);display:block;margin-top:6px
 footer{font:8px/2 var(--px);color:var(--muted);padding:34px 4px;text-transform:uppercase}
 body:fullscreen{max-width:none;overflow:auto}
 @media(max-width:700px){body{padding:14px}main{grid-template-columns:1fr}.learning{grid-template-columns:1fr}.board{max-width:550px;width:100%;margin:4px auto}header button{font-size:8px;padding:10px}h1{font-size:16px}.stats strong{font-size:16px}}
+
+#chart-empty{position:absolute;inset:0;display:grid;place-items:center;font:10px/2 var(--px);text-align:center;color:var(--muted);padding:20px}#chart-empty[hidden]{display:none}
+.controls button{touch-action:none;user-select:none}button{min-height:44px}
+.toolbar select{max-width:100%}.toolbar label{min-width:0}
+.arrow::before{border:0!important;width:20px;height:20px;background:currentColor;clip-path:polygon(40% 0,60% 0,60% 20%,80% 20%,80% 40%,100% 40%,100% 60%,60% 60%,60% 100%,40% 100%,40% 60%,0 60%,0 40%,20% 40%,20% 20%,40% 20%);margin:0!important;transform:translate(-50%,-50%)}
+.arrow.right::before{transform:translate(-50%,-50%) rotate(90deg)}.arrow.down::before{transform:translate(-50%,-50%) rotate(180deg)}.arrow.left::before{transform:translate(-50%,-50%) rotate(-90deg)}
+@media(max-width:450px){.stats{gap:16px 8px}.stats strong{font-size:12px}.battery-title strong{font-size:20px}.toolbar label{width:100%}.toolbar select{width:100%}#chart-empty{font-size:8px}.learning{padding:14px}main{grid-template-columns:minmax(0,1fr)}}

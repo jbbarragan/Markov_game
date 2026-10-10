@@ -1,0 +1,5 @@
+Pyodide 0.27.2, distribuido desde el paquete oficial npm pyodide@0.27.2.
+Proyecto: https://pyodide.org/ y https://github.com/pyodide/pyodide
+Licencia: Mozilla Public License 2.0, adjunta en LICENSE-PYODIDE.
+Incluye Python 3.12 y su biblioteca estándar; condiciones en LICENSE-PYTHON.
+Los recursos se conservan sin modificaciones y se sirven desde el mismo origen.

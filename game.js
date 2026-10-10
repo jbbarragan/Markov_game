@@ -1,15 +1,18 @@
 'use strict';
 const $=id=>document.getElementById(id), canvas=$('map'), ctx=canvas.getContext('2d');
-const worker=new Worker('worker.js?v=4');
+const worker=new Worker('worker.js?v=5');
 const FONT='"Press Start 2P","Courier New",monospace', BKEYS=['latas','movimiento','espera','rescates'];
-let serial=0, pending=new Map(), state=null, agent=null, busy=false, paused=false, pilot='manual', queued=4, timer=0, batch=false, rescueUntil=0, trace=[], lastT=-1, clockAt=performance.now(), lastManual=0;
+let serial=0, pending=new Map(), state=null, agent=null, busy=false, paused=false, pilot='manual', timer=0, batch=false, rescueUntil=0, trace=[], clockAt=performance.now(), started=false;
+let inputQueue=[], heldAction=null, heldNext=0;
+const MOVE_MS=180;
+function clearInput(){inputQueue=[];heldAction=null;}
 function clockDelta(){const now=performance.now(),dt=Math.max(0,(now-clockAt)/1000);clockAt=now;return dt;}
 const col=name=>getComputedStyle(document.body).getPropertyValue(name).trim()||'#888';
-function lock(){for(const id of ['mode','drain','seed','reset','ai','train','evaluate','export','dlTele','dlBal'])$(id).disabled=busy||batch;}
+function lock(){for(const id of ['mode','drain','slip','seed','reset','ai','train','evaluate','export','dlTele','dlBal'])$(id).disabled=busy||batch;}
 function rpc(op,fields={}){return new Promise((resolve,reject)=>{const id=++serial;pending.set(id,{resolve,reject});worker.postMessage({id,op,...fields});});}
 worker.onmessage=({data})=>{const p=pending.get(data.id);if(!p)return;pending.delete(data.id);data.error?p.reject(Error(data.error)):p.resolve(data.result);};
 worker.onerror=e=>{for(const p of pending.values())p.reject(Error(e.message));pending.clear();};
-function fail(e){paused=true;batch=false;$('status').textContent='Error: '+e.message+' · Revisa internet y abre la página mediante HTTP/HTTPS. Recarga para reintentar.';}
+function fail(e){paused=true;batch=false;$('status').textContent='Error: '+e.message+' · Abre el proyecto mediante HTTP/HTTPS y comprueba que se subió la carpeta game-v5 completa.';}
 function download(name,data,type='application/json'){const a=document.createElement('a'),u=URL.createObjectURL(new Blob([data],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
 const seedValue=()=>{const s=parseInt($('seed').value,10);return Number.isFinite(s)&&s>=0?s:42;};
 
@@ -47,7 +50,7 @@ function batteryTrace(){const c=$('trace'),g=frame(c),xmax=Math.max(100,trace.le
   line(g,3,Y(40),c.width-4,Y(40),col('--red'),true);line(g,3,c.height-4,c.width-4,c.height-4,col('--muted'));line(g,3,2,3,c.height-4,col('--muted'));
   for(let i=1;i<trace.length;i++)line(g,X(trace[i-1][0]),Y(trace[i-1][1]),X(trace[i][0]),Y(trace[i][1]),col('--green'));
   if(trace.length){const p=trace[trace.length-1];g.fillStyle=col('--gold');g.fillRect(Math.round(X(p[0]))-1,Math.round(Y(p[1]))-1,3,3);}}
-function chart(){const c=$('chart'),g=frame(c),h=agent?.history||[];
+function chart(){const c=$('chart'),g=frame(c),h=agent?.history||[];$('chart-empty').hidden=!!h.length;
   if(!h.length){$('ymax').textContent='';$('ymin').textContent='';g.fillStyle=col('--muted');for(let i=0;i<c.width;i+=4)dot(g,i,c.height-3,col('--grid'));return;}
   const vals=h.map(x=>x.score),min=Math.min(0,...vals),max=Math.max(1,...vals),X=i=>3+i/Math.max(1,h.length-1)*(c.width-6),Y=v=>c.height-4-(v-min)/(max-min)*(c.height-8);
   $('ymax').textContent=max.toFixed(1);$('ymin').textContent=min.toFixed(1);
@@ -61,12 +64,13 @@ function redraw(){draw();gaussian();batteryTrace();chart();}
 const bat=$('battery');for(let i=0;i<20;i++)bat.append(document.createElement('i'));
 const sign=v=>(v<0?'−':'+')+Math.abs(v).toFixed(2);
 function render(result){state=result.state;agent=result.agent;
-  if(state.elapsed===0)trace=[[0,state.energy]];else if(!trace.length||state.elapsed!==trace[trace.length-1][0])trace.push([state.elapsed,state.energy]);lastT=state.t;
+  if(state.elapsed===0)trace=[[0,state.energy]];else if(!trace.length||state.elapsed!==trace[trace.length-1][0])trace.push([state.elapsed,state.energy]);
   $('position').textContent=`POSICIÓN (${state.x}, ${state.y}) · 10 × 10`;
   const lit=Math.ceil(state.energy/5);[...bat.children].forEach((b,i)=>b.classList.toggle('on',i<lit));bat.classList.toggle('low',!state.high);
   $('energy').textContent=state.energy.toFixed(1)+'%';$('state').textContent=state.high?'ALTO · SH':'BAJO · SL';$('state').style.color=state.high?col('--green'):col('--red');
   $('rate').textContent=state.rate+' %/s';$('autonomy').textContent='AUTONOMÍA ≈ '+Math.round(state.autonomy)+' s';
   document.querySelectorAll('#pips span').forEach(s=>s.classList.toggle('on',Number(s.dataset.r)===state.rate));
+  $('slip-info').textContent=state.slip?'Derrape N(0, 25²) · umbrales ±30°':'Derrape desactivado · dirección exacta';
   $('profile').textContent=state.profile==='mixed'?'Perfil: intercalado, la tasa cambia entre 1 y 9 %/s a lo largo de la partida.':`Perfil: constante ${state.rate} %/s`+(state.drain_option==='random'?' (sorteado para esta partida).':'.');
   for(const [id,value]of Object.entries({turn:`${state.t}/100`,score:state.score.toFixed(2),cans:state.caught,rescues:state.rescues,return:state.discounted.toFixed(3),time:state.elapsed.toFixed(1)+' s','drain-last':state.last.drain.toFixed(2),angle:state.last.angle.toFixed(2),transition:state.last.message}))$(id).textContent=value;
   for(const k of BKEYS){const b=state.balance[k],el=$('b-'+k);el.textContent=sign(b);el.className=b>0?'pos':b<0?'neg':'';$('n-'+k).textContent='×'+state.counts[k];}
@@ -76,30 +80,77 @@ function render(result){state=result.state;agent=result.agent;
   $('downloads').hidden=pilot==='manual';
   $('dlinfo').textContent=`Telemetría: ${agent.telemetry_rows} pasos recientes · Balance de recompensas: ${agent.episodes+agent.evaluations} episodios (entrenamiento y evaluación).`;
   $('v2').textContent=state.mode==='practice'?'+1':'+2';$('v3').textContent=state.mode==='practice'?'+1':'+4';
-  if(state.last.rescue){rescueUntil=performance.now()+850;$('alert').hidden=false;setTimeout(()=>{$('alert').hidden=true;draw();},870);}
+  if(state.last.rescue && performance.now()>=rescueUntil){clearInput();rescueUntil=performance.now()+850;$('alert').hidden=false;setTimeout(()=>{$('alert').hidden=true;draw();},870);}
   redraw();
-  $('status').textContent=state.done?'Partida terminada · 100 turnos. '+(pilot==='manual'?'Pulsa Nueva partida manual para jugar otra.':'El siguiente episodio comienza automáticamente.'):(paused?'Pausado.':pilot==='manual'?'Flechas: movimiento inmediato. La batería baja por segundo, incluso sin moverte.':'Python decide las acciones. '+(pilot==='learn'?'Q se actualiza con cada transición.':'Q permanece fija.'));
+  $('status').textContent=state.done?'Partida terminada · 100 turnos. '+(pilot==='manual'?'Pulsa Nueva partida manual para jugar otra.':'El siguiente episodio comienza automáticamente.'):(paused?'Pausado.':pilot==='manual'?(started?'Flechas activas · batería por tiempo · '+(state.slip?'Derrape gaussiano activo.':'Dirección exacta.'):'LISTO · Batería al 100%. Pulsa una flecha para iniciar el reloj.'):'Python decide las acciones. '+(pilot==='learn'?'Q se actualiza con cada transición.':'Q permanece fija.'));
 }
 async function newGame(fresh=false,nextPilot='manual'){
-  if(busy||batch)return;busy=true;lock();clearTimeout(timer);
-  try{pilot=nextPilot;paused=false;$('pause').textContent='Pausar';queued=4;render(await rpc('reset',{mode:$('mode').value,seed:seedValue(),drain:$('drain').value,fresh}));}catch(e){fail(e);}finally{clockAt=performance.now();busy=false;lock();schedule();}
+  if(batch)return;if(busy){setTimeout(()=>newGame(fresh,nextPilot),30);return;}busy=true;lock();clearTimeout(timer);clearInput();
+  try{pilot=nextPilot;paused=false;started=pilot!=='manual';rescueUntil=0;$('alert').hidden=true;$('pause').textContent='Pausar';
+    render(await rpc('reset',{mode:$('mode').value,seed:seedValue(),drain:$('drain').value,slip:$('slip').value==='1',fresh}));
+    canvas.focus({preventScroll:true});
+  }catch(e){fail(e);}finally{clockAt=performance.now();busy=false;lock();schedule();}
 }
-async function action(a){if(busy||paused||!state||state.done||batch||performance.now()<rescueUntil)return;busy=true;
-  try{render(await rpc('step',{action:a,dt:clockDelta()}));}catch(e){fail(e);}finally{busy=false;}}
-function schedule(){clearTimeout(timer);if(!state||paused||batch)return;timer=setTimeout(tick,pilot==='manual'?100:Number($('speed').value));}
-async function tick(){if(paused||batch)return;if(document.hidden){clockAt=performance.now();schedule();return;}if(busy||performance.now()<rescueUntil){clockAt=performance.now();schedule();return;}
-  if(pilot==='manual'){if(!state.done){busy=true;try{render(await rpc('clock',{dt:clockDelta()}));}catch(e){fail(e);}finally{busy=false;}}schedule();return;}
-  busy=true;try{if(state.done){if(pilot==='eval'){paused=true;$('status').textContent='Evaluación terminada. Datos disponibles para descargar.';}else{render(await rpc('reset',{mode:state.mode,seed:Math.floor(Math.random()*2147483647),drain:state.drain_option}));}}else{render(await rpc('auto',{learn:pilot==='learn'}));}}catch(e){fail(e);}finally{busy=false;lock();schedule();}}
-function manual(a){if(pilot!=='manual'||busy||batch||paused||document.hidden)return;if(performance.now()-lastManual<120)return;if(a===5&&state&&(state.x!==0||state.y!==0)){$('status').textContent='Solo puedes recargar en la estación (0,0).';return;}lastManual=performance.now();action(a);}
-$('reset').onclick=()=>{$('seed').value=seedValue()+1;newGame(false,'manual');};   /* semilla nueva = partida y desgaste nuevos */
-$('ai').onclick=()=>newGame(true,'learn');$('mode').onchange=()=>newGame(true,'manual');$('drain').onchange=()=>newGame(false,'manual');
-$('pause').onclick=()=>{paused=!paused;clockAt=performance.now();$('pause').textContent=paused?'Reanudar':'Pausar';$('status').textContent=paused?'Pausado.':'Simulación activa.';schedule();};
+function schedule(){clearTimeout(timer);if(!state||paused||batch)return;timer=setTimeout(tick,pilot==='manual'?20:Number($('speed').value));}
+async function tick(){
+  if(paused||batch)return;
+  if(document.hidden||performance.now()<rescueUntil){clockAt=performance.now();schedule();return;}
+  if(busy){schedule();return;}
+  if(pilot==='manual'){
+    if(state.done){clearInput();return;}
+    const now=performance.now();
+    if(heldAction!==null&&now>=heldNext&&!inputQueue.length){inputQueue.push(heldAction);heldNext=now+MOVE_MS;}
+    const a=inputQueue.length?inputQueue.shift():null;
+    if(a!==null&&!started){started=true;clockAt=now;}
+    if(!started){clockAt=now;schedule();return;}
+    if(a===null&&now-clockAt<100){schedule();return;}
+    busy=true;
+    try{render(await rpc(a===null?'clock':'step',{action:a,dt:clockDelta()}));}
+    catch(e){fail(e);}finally{busy=false;schedule();}
+    return;
+  }
+  busy=true;
+  try{
+    if(state.done){
+      if(pilot==='eval'){paused=true;$('pause').textContent='Reanudar';$('status').textContent='Evaluación terminada. Datos disponibles para descargar.';}
+      else render(await rpc('reset',{mode:state.mode,seed:Math.floor(Math.random()*2147483647),drain:state.drain_option,slip:state.slip}));
+    }else render(await rpc('auto',{learn:pilot==='learn'}));
+  }catch(e){fail(e);}finally{busy=false;lock();schedule();}
+}
+function manual(a){
+  if(pilot!=='manual'||batch||paused||document.hidden||!state||state.done||performance.now()<rescueUntil)return;
+  if(a===5&&(state.x!==0||state.y!==0)){$('status').textContent='Solo puedes recargar en la estación (0,0).';return;}
+  if(inputQueue.length<12)inputQueue.push(a);
+}
+const keyMap={ArrowUp:0,ArrowRight:1,ArrowDown:2,ArrowLeft:3,' ':4,r:5,R:5};
+function keyInput(key,down,repeat=false){
+  if(!(key in keyMap))return;
+  const a=keyMap[key];
+  if(down){if(!repeat){manual(a);if(a<4){heldAction=a;heldNext=performance.now()+MOVE_MS;}}}
+  else if(heldAction===a)heldAction=null;
+}
+for(const type of ['keydown','keyup'])document.addEventListener(type,e=>{
+  if(e.target.matches('input,select,textarea')||!(e.key in keyMap))return;
+  if(pilot!=='manual')return;e.preventDefault();keyInput(e.key,type==='keydown',e.repeat);
+});
+window.addEventListener('blur',()=>{clearInput();});
+document.addEventListener('visibilitychange',()=>{clearInput();clockAt=performance.now();});
+$('reset').onclick=()=>{$('seed').value=seedValue()+1;newGame(false,'manual');};
+$('ai').onclick=()=>newGame(true,'learn');
+for(const id of ['mode','drain','slip'])$(id).onchange=()=>newGame(true,'manual');
+$('pause').onclick=()=>{paused=!paused;clearInput();clockAt=performance.now();$('pause').textContent=paused?'Reanudar':'Pausar';$('status').textContent=paused?'Pausado.':'Simulación activa.';schedule();};
 $('evaluate').onclick=()=>newGame(false,'eval');$('speed').onchange=schedule;
-$('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{$('status').textContent='Pantalla completa no disponible aquí. Abre el juego en una pestaña independiente.';}};
-for(const b of document.querySelectorAll('[data-action]'))b.onclick=()=>manual(Number(b.dataset.action));
-canvas.addEventListener('keydown',e=>{const map={ArrowUp:0,ArrowRight:1,ArrowDown:2,ArrowLeft:3,' ':4,r:5,R:5};if(e.key in map){e.preventDefault();manual(map[e.key]);}});
-$('train').onclick=async()=>{if(busy||batch||!state)return;batch=true;pilot='learn';paused=false;clearTimeout(timer);$('train').disabled=true;lock();
-  try{for(let i=0;i<50;i++){if(paused)break;render(await rpc('train',{count:10}));$('status').textContent=`Entrenando Python: ${(i+1)*10} / 500 episodios adicionales… Pausar detiene al terminar este bloque.`;}pilot='eval';render(await rpc('state'));}catch(e){fail(e);}finally{batch=false;lock();schedule();}};
+$('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{$('status').textContent='Abre el juego en una pestaña para usar pantalla completa.';}};
+for(const b of document.querySelectorAll('[data-action]')){
+  b.addEventListener('pointerdown',e=>{e.preventDefault();const a=Number(b.dataset.action);manual(a);if(a<4){heldAction=a;heldNext=performance.now()+MOVE_MS;}b.setPointerCapture(e.pointerId);});
+  b.addEventListener('pointerup',()=>{heldAction=null;});b.addEventListener('pointercancel',()=>{heldAction=null;});
+  b.addEventListener('click',e=>{if(e.detail===0)manual(Number(b.dataset.action));});
+}
+$('train').onclick=async()=>{if(busy||batch||!state)return;batch=true;pilot='learn';paused=false;clearInput();clearTimeout(timer);lock();
+  try{for(let i=0;i<50;i++){if(paused)break;render(await rpc('train',{count:10}));$('status').textContent=`Entrenando Python: ${(i+1)*10} / 500 episodios adicionales… Pausar detiene al terminar este bloque.`;}
+    pilot='eval';paused=true;$('pause').textContent='Reanudar';render(await rpc('state'));$('status').textContent='Entrenamiento terminado. Descarga los CSV o pulsa Evaluar sin explorar.';
+  }catch(e){fail(e);}finally{batch=false;lock();schedule();}
+};
 /* Descargas del agente: solo visibles cuando Python controla el robot */
 async function csvDownload(kind,name){if(!state)return;try{const r=await rpc('csv',{kind});download(name,'\ufeff'+r.csv,'text/csv;charset=utf-8');$('dlinfo').textContent=`${name}: ${r.rows} filas descargadas.`;}catch(e){fail(e);}}
 $('dlTele').onclick=()=>csvDownload('telemetry','can-finder-telemetria.csv');
@@ -110,6 +161,8 @@ function snapshot(){const c=document.createElement('canvas');c.width=760;c.heigh
   [`Turno: ${state.t}/100`,`Bateria: ${state.energy.toFixed(1)}%`,state.high?'Estado ALTO (SH)':'Estado BAJO (SL)',`Desgaste: ${state.rate} %/s`,`Puntaje: ${state.score.toFixed(2)}`,`G0: ${state.discounted.toFixed(3)}`,`Latas: ${state.caught}`,`Rescates: ${state.rescues}`,`Angulo: ${state.last.angle.toFixed(2)}`,`Semilla: ${state.seed}`,`Control: ${pilot}`].forEach((s,i)=>g.fillText(s,435,75+i*31));return c.toDataURL('image/png');}
 $('capture').onclick=()=>{if(!state)return;const a=document.createElement('a');a.href=snapshot();a.download='can-finder-captura.png';a.click();};
 document.addEventListener('visibilitychange',()=>{clockAt=performance.now();});
-window.addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.theme){document.body.classList.toggle('light',e.data.theme==='light');if(state)$('state').style.color=state.high?col('--green'):col('--red');redraw();}});
+window.addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.clearInput){clearInput();return;}if(e.origin===location.origin&&e.data?.control){keyInput(e.data.key,e.data.control==='keydown',e.data.repeat);return;}if(e.origin===location.origin&&e.data?.theme){document.body.classList.toggle('light',e.data.theme==='light');if(state)$('state').style.color=state.high?col('--green'):col('--red');redraw();}});
 document.fonts?.ready.then(()=>{if(state)redraw();else draw();});
 draw();gaussian();batteryTrace();chart();newGame(true);
+
+new ResizeObserver(()=>{if(parent!==window)parent.postMessage({gameHeight:document.documentElement.scrollHeight+12},location.origin);}).observe(document.body);

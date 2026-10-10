@@ -1,62 +1,63 @@
 ---
 layout: default
-title: Reporte de la práctica
+title: Informe técnico
 nav_order: 1
 ---
-<div class="cf-kicker">IBERO CDMX / APRENDIZAJE REFORZADO / PRÁCTICA 05</div>
+<div class="report-label">UNIVERSIDAD IBEROAMERICANA CIUDAD DE MÉXICO · APRENDIZAJE REFORZADO</div>
 
-# Can Finder 5000
-## Un robot, cien decisiones y una batería finita
+# Simulación del robot Can Finder 5000 en un entorno estocástico
 
-**Joshua Abdiel Barragán Guardado**  
-Ingeniería Mecatrónica y Sistemas Ciberfísicos · Universidad Iberoamericana Ciudad de México  
+**Joshua Abdiel Barragán Guardado**
+
+Ingeniería Mecatrónica y Sistemas Ciberfísicos
+
+Práctica 5 · Procesos de decisión de Markov
+
 Docentes: Dr. Alexandro López González y Mtro. Julio A. Caballero Mora
 
-<div class="cf-hero"><span class="cf-kicker">SIMULACIÓN INTERACTIVA DE UN MDP</span><h2>Reciclar bajo incertidumbre.</h2><p>Un pequeño robot de orugas explora un mundo de 10 × 10 celdas. Cada desplazamiento puede cambiar de dirección, la batería se agota con el paso del tiempo y cada decisión tiene una recompensa.</p><div class="cf-tags">16 BITS &nbsp; / &nbsp; PYTHON + JAVASCRIPT &nbsp; / &nbsp; Q-LEARNING</div></div>
-
-[Abrir el laboratorio]({{ '/laboratorio/' | relative_url }}){: .btn .btn-primary }
-[Consultar el modelo]({{ '/modelo/' | relative_url }}){: .btn }
-
 ### Resumen
-Se implementa un entorno de recolección basado en procesos de decisión de Markov. El jugador controla un robot mediante el teclado y observa movimiento estocástico y energía dependiente del tiempo. El sistema mide recompensa acumulada, retorno descontado, recolecciones y rescates durante episodios de 100 turnos. Como extensión, se incorpora un agente de Q-learning escrito en Python, inicializado sin experiencia, y una modalidad con recompensas por color. En ambas modalidades la batería se descarga en función del tiempo, con una tasa que cambia de una partida a otra.
+Se presenta un simulador de recolección en una cuadrícula de 10 × 10 celdas con recursos energéticos limitados. El jugador selecciona acciones de desplazamiento, espera y recarga, mientras el sistema representa la posición, la energía disponible, las recompensas y las perturbaciones del movimiento. El informe fundamenta los elementos de la interfaz exigidos en la sección 6.2 de la guía [1] y explica su relación con el modelo de transición. La implementación separa el entorno, escrito en Python, de la representación gráfica. La descarga se adapta a una función del tiempo activo, de acuerdo con la modificación solicitada para el juego. Se conservan el horizonte de 100 decisiones, los umbrales de batería y la tabla de recompensas de la modalidad base.
 
-El sitio presenta el reporte y permite experimentar dentro de la misma página. Python ejecuta el entorno y el agente en un trabajador del navegador mediante Pyodide; JavaScript dibuja el tablero, captura los controles y muestra las métricas. La separación permite reutilizar el mismo entorno en experimentos fuera del navegador.
+**Palabras clave:** proceso de decisión de Markov; simulación; incertidumbre; telemetría; gestión energética.
 
-### 1. Objetivo
-Experimentar el compromiso entre recolectar recompensas, preservar energía y evitar rescates; identificar estados, acciones, recompensas y transiciones; observar la diferencia entre una política humana y una política que aprende de su interacción.
+### 1. Objetivo y alcance
+El objetivo es representar de forma interpretable una decisión secuencial bajo incertidumbre: el robot debe obtener recompensas sin perder la energía necesaria para regresar a la estación. La representación gráfica no se limita a ilustrar una trayectoria; permite observar qué acción se solicitó, qué transición ocurrió y qué consecuencia produjo.
 
-### 2. Alcance y modalidades
+El alcance principal de este informe corresponde al tablero y al panel de telemetría exigidos por la guía [1, pp. 2–4]. La extensión de aprendizaje por refuerzo se describe por separado, para distinguir la política humana de una política aprendida. No se incluyen formularios, registros ni una sección de bitácora del jugador. Tampoco se presentan observaciones humanas o mejoras del agente que no hayan sido medidas.
 
-| Característica | Práctica | Extendida |
+### 2. Correspondencia con los requisitos visuales
+
+| Requisito de la guía [1, p. 4] | Implementación | Finalidad de la representación |
 |:--|:--|:--|
-| Tablero / base / horizonte | 10 × 10 / (0,0) / 100 turnos | Iguales |
-| Latas iniciales | 12 | 12 |
-| Reposición tras recolectar | Inmediata, mantiene 12 | Inmediata |
-| Aparición adicional | No | Probabilidad 1−exp(−Δt/8), máximo 20 |
-| Premio por lata | +1 en todos los colores | Verde +1, azul +2, rosa +4 |
-| Casilla vacía / rescate | −0.05 / −3 | Iguales |
-| Esperar | +0.10 (la batería sigue bajando) | 0 (la batería sigue bajando) |
-| Descarga de batería | Función del tiempo: 1, 2, 4, 6 o 9 %/s, constante o intercalada, según la partida | Igual |
-| Avance manual | Movimiento inmediato; reloj independiente | Igual |
-| Recarga | R sobre la base: 100% | Igual |
+| Tablero izquierdo de 10 × 10 | Cuadrícula indexada de 0 a 9 en cada eje | Ubicar al robot y delimitar las acciones admisibles |
+| Estación en la esquina inicial | Celda cian rotulada BASE en (0,0) | Identificar el único punto de recarga voluntaria |
+| Latas distribuidas en el mapa | Doce latas iniciales; reposición al recolectar | Representar las oportunidades de recompensa |
+| Indicador verde o rojo del robot | Luz del robot y segmentos de batería según SH/SL | Hacer visible el cambio de régimen energético |
+| Alerta de rescate | Robot apagado, zZz, X roja y penalización −3 | Mostrar el evento antes de regresar a la base |
+| Medidor y estado de batería | Porcentaje numérico, barra segmentada y etiqueta SH/SL | Distinguir carga continua y clasificación discreta |
+| Descarga y derrape de la transición | ΔE, θ, curva gaussiana y aviso de desvío | Relacionar incertidumbre, acción y resultado |
+| Marcador de desempeño | Turno, latas, rescates, puntaje y retorno descontado | Evaluar consecuencias inmediatas y acumuladas |
 
-La modalidad Práctica conserva las reglas evaluables. La modalidad Extendida satisface el diseño adicional del videojuego y debe analizarse por separado. El PDF propone Python o MATLAB: aquí la lógica completa es Python y la interfaz web es una adaptación de presentación, no una implementación en Pygame/Tkinter. Se incluye además ejecución de entrenamiento con Python estándar.
+Todos los componentes del laboratorio usan una paleta limitada, fuentes locales de píxeles y trazos discretos sin interpolación. El informe emplea tipografía y composición académicas para facilitar la lectura de la fundamentación.
 
-### 3. Diseño del sistema
-Todo el laboratorio sigue una estética de 16 bits: tipografías de píxeles incluidas en el repositorio, paneles de esquinas escalonadas, batería segmentada y gráficas dibujadas a baja resolución. El mapa usa sprites originales dibujados por código: robot amarillo con orugas y ojos binoculares inspirado en WALL·E, latas de tres colores, estación cian y terreno cuadriculado. El lenguaje visual evoca videojuegos de 16 bits, con píxeles nítidos y paleta limitada; no requiere imágenes externas.
+### 3. Adaptaciones respecto del enunciado
+La guía prescribe una descarga gaussiana por movimiento y ausencia de consumo al esperar [1, pp. 2–3]. Esta versión utiliza descarga por tiempo activo, incluso cuando el robot permanece inmóvil después de iniciar la partida. Por tanto, constituye una **adaptación energética explícita** y no una reproducción literal de esas dos reglas. La modalidad «Práctica adaptada» conserva las recompensas originales, pero no debe confundirse con el modelo energético original.
 
-El panel derecho muestra energía, SH/SL, tasa de desgaste y autonomía, la curva de batería contra tiempo, ΔE, ángulo de derrape, curva gaussiana, probabilidades condicionadas a la carga, turno, latas, rescates, puntaje y G₀; bajo el tablero se muestra el balance de recompensas de la partida (latas, movimiento, espera y rescates). El agotamiento presenta una alerta con zZz y X roja durante aproximadamente 850 ms, antes de mostrar el robot de nuevo en la base.
+La tasa inicial es 1 punto porcentual por segundo: una carga completa dura aproximadamente 100 segundos sin recarga. La alternativa de 0.5 %/s permite 200 segundos; las tasas 2, 4, 6 y 9 %/s se seleccionan como mayores niveles de dificultad. También pueden elegirse perfiles aleatorios por partida o intercalados. El reloj manual comienza con la primera acción; carga de la página, pausa, pestaña oculta y animación de rescate no descuentan batería.
 
-### 4. Resultados y estado de la evidencia
-Este reporte describe una implementación y un protocolo reproducible. **No se presentan partidas humanas ni mejoras del agente como resultados ya observados.** El juego permite capturar el tablero con su telemetría en una imagen. El entrenamiento produce una curva real en cada ejecución y, cuando Python controla el robot, permite descargar la telemetría paso a paso, el balance de recompensas por episodio y la tabla Q.
+El derrape gaussiano permanece activado inicialmente. Puede desactivarse para comprobar el control direccional; esa opción produce una dinámica determinista de movimiento y se identifica en el panel. El modo Extendida añade premios por color y apariciones temporales de latas; sus resultados se analizan por separado.
 
-Una recompensa positiva por esperar puede favorecer la inactividad; por tanto, aprender no implica necesariamente recolectar más. Deben compararse puntaje, retorno, latas y rescates conjuntamente. El aprendizaje tabular con estado agregado tampoco garantiza convergencia a la política óptima del entorno completo.
+### 4. Criterios de interpretación
+El puntaje acumulado mide el saldo de recompensas. El retorno descontado asigna menor peso a consecuencias lejanas en número de decisiones. El número de latas cuantifica la tarea de recolección, mientras los rescates reflejan agotamientos. Ninguna métrica aislada demuestra una política adecuada: la recompensa positiva por esperar puede elevar el puntaje sin aumentar la recolección.
 
-### 5. Conclusión de diseño
-La simulación vuelve visibles los componentes de una decisión secuencial bajo incertidumbre. Regresar a la base tiene un costo y también un riesgo: la batería baja con el tiempo, aunque el robot espere, y el derrape dificulta alcanzar la estación. La extensión de aprendizaje permite investigar cómo esas reglas producen estrategias, incluyendo comportamientos poco intuitivos como esperar. La conclusión experimental final se completa después de las tres partidas reales.
+Las comprobaciones de funcionamiento no sustituyen un experimento comparativo. Para afirmar que una política mejora deben fijarse modalidad, perfil energético, derrape y semillas de evaluación; después deben contrastarse latas, rescates y recompensas sobre el mismo conjunto de condiciones.
+
+### 5. Conclusión
+La organización del tablero y de la telemetría permite vincular posición, acción, perturbación y recompensa en una misma transición. La separación entre reloj y entradas de teclado evita que pulsar más rápido implique un gasto energético artificial. La distinción entre SH y SL facilita la lectura visual, aunque no contiene por sí sola toda la información del entorno. La interpretación de los resultados exige considerar la energía continua, el mapa de latas y las adaptaciones declaradas.
 
 ### Referencias
-1. López González, A. y Caballero Mora, J. A. *Práctica: El Juego del “Can Finder 5000” en un Gridworld Estocástico*. Material de clase proporcionado, 5 páginas.
-2. [Pyodide: uso de Python en el navegador](https://pyodide.org/en/0.27.2/usage/index.html). Versión fijada: 0.27.2.
-3. [Just the Docs](https://just-the-docs.com/). Tema de documentación para Jekyll.
-4. [GitHub Pages: publicación mediante GitHub Actions](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+[1] A. López González y J. A. Caballero Mora, «Práctica: El Juego del “Can Finder 5000” en un Gridworld Estocástico», material de la asignatura Aprendizaje Reforzado, Universidad Iberoamericana, pp. 1–5, documento proporcionado por el usuario.
+
+[2] R. S. Sutton y A. G. Barto, [Reinforcement Learning: An Introduction, segunda edición](https://mitpress.mit.edu/9780262039246/reinforcement-learning/), MIT Press, 2018. Referencia conceptual complementaria.
+
+[3] C. J. C. H. Watkins y P. Dayan, [«Q-learning»](https://www.gatsby.ucl.ac.uk/~dayan/papers/wd92.html), Machine Learning, vol. 8, pp. 279–292, 1992. DOI: 10.1007/BF00992698.

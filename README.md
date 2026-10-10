@@ -1,62 +1,31 @@
-> **Corrección de publicación:** consulta `LEEME_CORRECCION.md`. Primero activa GitHub Actions en Settings → Pages.
+# Can Finder 5000 — versión 5.0
 
-# Can Finder 5000 — Práctica 5
+## Abrir en Windows
+Extrae este ZIP en una carpeta nueva y ejecuta INICIAR_JUEGO.bat. También puedes abrir una terminal en esa carpeta y ejecutar:
 
-Reporte Just the Docs + juego Canvas de estética 16 bits + motor y Q-learning en Python.
-
-## Probar
-
-```bash
+```sh
 python run_local.py
 ```
 
-Abre `http://127.0.0.1:8000/reporte-local.html`. Internet necesario para Pyodide 0.27.2. No abrir con `file://`.
+Se abre http://127.0.0.1:8000/reporte-local.html. Este servidor ejecuta el motor Python nativo: no requiere paquetes externos ni internet. Usa una sola pestaña por servidor local. Para elegir otro puerto: `python run_local.py --port 8001`.
 
-## Publicar
+## Comprobar que abriste esta versión
+El encabezado del juego debe decir **VERSIÓN 5.0**. Tiene batería segmentada, tasas de descarga, selector de derrape y botones CSV en modo agente. No contiene formulario de bitácora.
 
-Sube el **contenido** de esta carpeta a la raíz de un repositorio nuevo. Incluye `.github/workflows/pages.yml`. En Settings → Pages selecciona **GitHub Actions**. Publicar en `main` inicia la construcción. El workflow calcula la ruta base del repo automáticamente. Si ya tienes un sitio en otro repositorio, no sobrescribas su workflow: revisa `docs/instalacion.md`.
+La batería empieza a bajar con tu primera acción: 1 %/s por defecto (100 segundos). Puedes elegir 0.5 %/s (200 segundos) o tasas más altas. El perfil aleatorio puede seleccionar 9 %/s y solo durar 11 segundos; úsalo si deseas esa dificultad. Flechas para moverte; mantenerlas repite a intervalos de 180 ms. El derrape gaussiano puede desviarte: desactívalo si deseas dirección exacta.
 
-## Jugar
+## GitHub Pages
+Reemplaza el contenido del repositorio con el contenido del ZIP, incluidos docs, build_local_report.py y .github/workflows/main.yml. Conserva GitHub Actions como origen de Pages. El juego nuevo está en **docs/game-v5/**. La ruta anterior docs/game/index.html redirige a esta versión; la antigua página de bitácora queda reemplazada por una redirección sin contenido ni entrada de navegación.
 
-Haz clic en el tablero. Flechas: mover; Espacio: esperar; R: recargar en (0,0). También hay botones táctiles. 100 turnos. Pantalla completa desde el botón superior.
+Es necesario esperar a que termine el despliegue. Un ZIP descargado no actualiza automáticamente el sitio publicado. Comprueba el rótulo VERSIÓN 5.0 en la página. El juego publicado incluye Pyodide 0.27.2 en docs/game-v5/vendor/pyodide y lo carga desde el mismo sitio, sin depender de un CDN externo. Sube también esa carpeta (incluido el archivo WASM).
 
-- Práctica: exactamente 12 latas, todas +1, esperar +0.10, rescate −3.
-- Extendida: colores +1/+2/+4, latas temporales hasta 20. Movimiento inmediato y batería por tiempo activo.
-- Batería: se descarga con el tiempo, no por movimiento. Perfil por partida: aleatorio, constante (1, 2, 4, 6 o 9 %/s) o intercalado. Esperar también gasta; recargar es instantáneo.
-- Aprender desde cero: borra Q y comienza exploración con Python.
-- Entrenar +500: conserva Q, acelera aprendizaje; Pausar lo detiene al acabar el bloque actual.
-- Evaluar: sin exploración ni actualizaciones; termina a los 100 turnos.
-- Capturar pantalla: PNG del tablero con su telemetría. Ya no hay bitácora interna; la guía exige tres partidas reales, pendientes de que las juegues.
-- Datos del agente (solo cuando Python controla el robot): telemetría paso a paso (CSV), balance de recompensas por episodio (CSV) y Q con parámetros (JSON).
+## Agente y datos
+Aprender desde cero borra Q y los datos anteriores del agente. Entrenar añade 500 episodios y se detiene; Evaluar ejecuta un episodio sin actualizar Q. El botón Pausar permite detener un bloque de entrenamiento. Los CSV contienen telemetría reciente y balances por episodio completo. No se registran partidas manuales.
 
-## Código
-
-`docs/game/core.py` es el único motor, compartido por la web y el entrenamiento CLI. Usa Python estándar. `worker.js` carga ese archivo con Pyodide en un worker; `game.js` solo controla interfaz, reloj y dibujo. Se incluyen todas las fuentes del reporte.
-
-```bash
+```sh
+python docs/game-v5/core.py --episodes 500 --mode extended --drain random --telemetry-csv telemetria.csv --balance-csv balances.csv
 python -m unittest discover -s tests -v
-python docs/game/core.py --episodes 1000 --mode practice --drain random --output training.json --telemetry-csv telemetria.csv --balance-csv balance.csv
 ```
 
-## Convenciones y límites
-
-- Sigma angular = 25°, coherente con ≈77% de aciertos del PDF; su notación de varianza es ambigua.
-- Consumo = integral de tasa(t) durante el tiempo activo, independiente del número de movimientos. Latas gaussianas redondeadas y rechazadas fuera de tablero/celdas libres.
-- El estado visible de 200 combinaciones no es Markov suficiente: el motor conserva E y el mapa. Q-learning usa agregación de estado; no hay garantía de optimalidad.
-- Esperar puede ser atractivo en Práctica; no se altera esa recompensa para forzar al agente a recoger (pero esperar sin recargar acaba en rescate).
-- Recompensas no se precargan en Q. El agente conoce sus observaciones y acciones válidas, y aprende de los premios del entorno.
-- No hay backend remoto ni envío de datos. Q vive en memoria de la pestaña; se puede exportar, no importar en esta versión. Las fuentes de píxeles (OFL) viajan en `docs/game/fonts/`.
-- La interfaz gráfica requiere HTTP/HTTPS y descarga de Pyodide. Entrenar por consola puede hacerse offline.
-- No se afirma publicación en GitHub ni se incluyen resultados humanos ficticios.
-
-Consulta `VERIFICACION.md` para el alcance de las pruebas entregadas.
-
-## Actualización 16 bits v4
-
-- Reporte, menús, paneles y gráficas con fuentes locales y estética de píxeles.
-- Batería por reloj independiente del teclado en ambos modos; mantener las flechas permite moverse continuamente.
-- Perfiles 1, 2, 4, 6, 9 %/s o intercalado; pausa/pestaña oculta detienen el reloj.
-- Agente: 0.2 s simulados por decisión, con CSV de telemetría y balance por episodio completo, y JSON de Q.
-- Sin página ni registro de bitácora manual. La telemetría del agente conserva hasta 40000 pasos recientes; los balances incluyen todos los episodios completos.
-
-Extrae este ZIP en una carpeta nueva y ejecuta `python run_local.py`. Si actualizas una carpeta anterior, elimina `docs/bitacora.md` y refresca el navegador con Ctrl+F5.
+## Informe
+reporte-local.html y las páginas de docs explican los requisitos visuales, las ecuaciones, las recompensas y las adaptaciones respecto de la guía. No incluyen resultados humanos inventados. `python build_local_report.py` regenera la copia local.

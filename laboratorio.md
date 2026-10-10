@@ -5,15 +5,13 @@ nav_order: 4
 ---
 # Laboratorio interactivo
 
-Elige **Práctica** para recompensas uniformes o **Extendida** para recompensas por color. Haz clic en el tablero y usa las flechas, Espacio y R. Las acciones manuales quedan bloqueadas cuando Python controla el robot. En pantallas pequeñas puedes usar los botones táctiles.
+**Versión 5.0.** La descarga inicial es 1 %/s y el reloj comienza con la primera acción. Flechas: desplazamiento; Espacio: esperar; R: recargar en la base. Mantener una flecha genera movimientos continuos. El selector de derrape permite comparar la dinámica gaussiana con el control direccional exacto.
 
-[Abrir juego en una pestaña]({{ '/game/index.html' | relative_url }}){: .btn .btn-primary target="_blank" }
+[Abrir el juego en una pestaña]({{ '/game-v5/index.html' | relative_url }}){: .btn target="_blank" }
 
-El botón **Pantalla completa** está dentro del juego. Al volver al reporte se conserva la sesión mientras no se recargue la página. La primera carga de Python puede tardar y requiere internet.
+<iframe class="cf-game" src="{{ '/game-v5/index.html' | relative_url }}" title="Can Finder 5000 versión 5.0" allow="fullscreen" allowfullscreen loading="eager"></iframe>
 
-<iframe class="cf-game" src="{{ '/game/index.html' | relative_url }}" title="Can Finder 5000, simulador MDP y aprendizaje en Python" allow="fullscreen" allowfullscreen loading="eager"></iframe>
+### Lectura de la interfaz
+El tablero conserva las posiciones discretas; el porcentaje muestra la energía continua. El color verde corresponde a E &gt; 40% y el rojo a E ≤ 40%. La curva de batería representa porcentaje contra segundos activos, con el umbral del 40% marcado. La curva gaussiana representa el error angular, con umbrales ±30° y marcador de la última muestra. El panel de transición distingue un derrape de una colisión con el borde.
 
-### Lectura de las métricas
-La batería se descarga con el tiempo a una tasa de 1, 2, 4, 6 o 9 % por segundo, constante o intercalada; el selector **Desgaste de batería** fija el perfil o lo sortea por partida. La gráfica de batería contra tiempo muestra cómo baja y el umbral SH/SL del 40%. α(E) y β(E) dependen de la tasa vigente. La línea vertical roja en la curva gaussiana marca el último ángulo; las líneas de umbral están en ±30°. Debajo del tablero, el balance de recompensas separa lo ganado o perdido por latas, movimiento, espera y rescates.
-
-Cuando Python controla el robot (aprender o evaluar) aparece la sección **Datos del agente** con la descarga de telemetría, balance de recompensas y tabla Q. En modo manual no hay bitácora ni descargas; el botón **Capturar pantalla** guarda una imagen del tablero con su telemetría.
+Los contadores de turno, latas y rescates muestran magnitudes distintas. El puntaje suma las recompensas, mientras G₀ aplica el descuento γ = 0.95. El balance bajo el tablero separa las contribuciones. En modo agente, los botones de telemetría y balance descargan los datos calculados por Python. No existe una sección de bitácora del jugador.

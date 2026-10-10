@@ -11,7 +11,7 @@ VALUES = [1., 2., 4.]
 
 # Desgaste de batería: función del TIEMPO, no del movimiento (puntos porcentuales por segundo).
 RATES = [1., 2., 4., 6., 9.]
-DRAIN_OPTIONS = ['random', '1', '2', '4', '6', '9', 'mixed']
+DRAIN_OPTIONS = ['0.5', 'random', '1', '2', '4', '6', '9', 'mixed']
 NOISE = 0.0            # descarga exacta por tiempo: independiente de cuántas acciones se ejecuten
 SEGMENT_SECONDS = (6, 15)   # duración de cada tramo en el perfil intercalado
 BALANCE_KEYS = ['latas', 'movimiento', 'espera', 'rescates', 'recarga']
@@ -26,7 +26,8 @@ BALANCE_COLUMNS = ['episode', 'phase', 'seed', 'mode', 'profile', 'steps', 'elap
 
 
 class World:
-    def __init__(self, mode='practice', seed=42, drain='random'):
+    def __init__(self, mode='practice', seed=42, drain='1', slip=True):
+        self.slip = bool(slip)
         self.mode, self.seed = mode, int(seed)
         self.rng = random.Random(self.seed)                    # latas y derrape
         self.prng = random.Random(self.seed * 1000003 + 17)    # perfil de desgaste
@@ -112,7 +113,7 @@ class World:
         # La batería baja con el tiempo, haga lo que haga el robot. La recarga es instantánea.
         drain = 0. if action == 5 else mean_drain
         if action is not None and action < 4:
-            angle = self.rng.gauss(0, 25)
+            angle = self.rng.gauss(0, 25) if self.slip else 0.
             direction = (action + (1 if angle > 30 else -1 if angle < -30 else 0)) % 4
             dx, dy = DIRS[direction]
             nx, ny = self.x + dx, self.y + dy
@@ -171,7 +172,7 @@ class World:
         phi=lambda z: .5*(1+math.erf(z/math.sqrt(2)))
         mu=self.integrate(self.elapsed, self.elapsed + 1.)
         sigma=max(1e-9, NOISE*mu)
-        return dict(mode=self.mode,seed=self.seed,x=self.x,y=self.y,t=self.t,energy=e,high=e>40,score=self.score,discounted=self.discounted,caught=self.caught,rescues=self.rescues,cans=[[x,y,c] for (x,y),c in self.cans.items()],last=self.last,elapsed=self.elapsed,
+        return dict(slip=self.slip,mode=self.mode,seed=self.seed,x=self.x,y=self.y,t=self.t,energy=e,high=e>40,score=self.score,discounted=self.discounted,caught=self.caught,rescues=self.rescues,cans=[[x,y,c] for (x,y),c in self.cans.items()],last=self.last,elapsed=self.elapsed,
                     alpha=float(e-mu>40) if e>40 else None,beta=float(e-mu>0) if e<=40 else None,done=self.t>=100,
                     rate=self.rate_at(self.elapsed),profile=self.profile,profile_label=self.profile_label(),drain_option=self.drain_opt,
                     autonomy=self.autonomy(),balance=self.balance,counts=self.counts)
@@ -252,7 +253,7 @@ def dispatch(raw):
     global world,agent
     req=json.loads(raw); op=req['op']
     if op=='reset':
-        world=World(req.get('mode','practice'),req.get('seed',42),req.get('drain','random'))
+        world=World(req.get('mode','practice'),req.get('seed',42),req.get('drain','1'),req.get('slip',True))
         if req.get('fresh'): agent=Learner(req.get('seed',42))
     elif op=='step': world.step(req['action'],req.get('dt',0),record=False)
     elif op=='clock': world.step(None,req.get('dt',0),record=False)
@@ -260,20 +261,20 @@ def dispatch(raw):
     elif op=='train':
         mode,drain=world.mode,world.drain_opt
         for _ in range(min(50,int(req.get('count',10)))):
-            w=World(mode,agent.rng.randrange(2**31),drain)
+            w=World(mode,agent.rng.randrange(2**31),drain,world.slip)
             while w.t<100: agent.advance(w)
-        world=World(mode,agent.rng.randrange(2**31),drain)
+        world=World(mode,agent.rng.randrange(2**31),drain,world.slip)
     elif op=='state': pass
     elif op=='csv':
         text,n=agent.csv(req.get('kind','telemetry'))
         return json.dumps(dict(csv=text,rows=n))
     elif op=='export':
-        return json.dumps(dict(state=world.state(),log=world.log,training=agent.history,evaluation=agent.eval_history,q=[dict(state=list(k),values=v) for k,v in agent.q.items()],parameters=dict(gamma=.95,learning_rate=.15,epsilon=agent.epsilon,drain_option=world.drain_opt,agent_dt_seconds=.2)))
+        return json.dumps(dict(state=world.state(),log=world.log,training=agent.history,evaluation=agent.eval_history,q=[dict(state=list(k),values=v) for k,v in agent.q.items()],parameters=dict(gamma=.95,learning_rate=.15,epsilon=agent.epsilon,drain_option=world.drain_opt,slip=world.slip,agent_dt_seconds=.2)))
     return json.dumps(dict(state=world.state(),agent=dict(episodes=agent.episodes,epsilon=agent.epsilon,states=len(agent.q),explorations=agent.explorations,exploitations=agent.exploitations,history=agent.history[-200:],telemetry_rows=len(agent.telemetry),evaluations=len(agent.eval_history))))
 
 if __name__=='__main__':
     import argparse
-    p=argparse.ArgumentParser();p.add_argument('--episodes',type=int,default=1000);p.add_argument('--mode',choices=['practice','extended'],default='practice');p.add_argument('--drain',choices=DRAIN_OPTIONS,default='random');p.add_argument('--output',default='training.json')
+    p=argparse.ArgumentParser();p.add_argument('--episodes',type=int,default=1000);p.add_argument('--mode',choices=['practice','extended'],default='practice');p.add_argument('--drain',choices=DRAIN_OPTIONS,default='1');p.add_argument('--output',default='training.json')
     p.add_argument('--telemetry-csv');p.add_argument('--balance-csv');args=p.parse_args()
     for i in range(args.episodes):
         w=World(args.mode,i,args.drain)
